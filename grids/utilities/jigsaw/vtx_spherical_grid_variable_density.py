@@ -121,7 +121,8 @@ def localrefVsLatLon(r, maxdist, slope, gammas=500, maxepsilons=10000):
     return resolution, lon, lat
 
 
-def sectionsrefVsLatLon(r, maxdist, maxr=15., epsilons=40.):
+def sectionsrefVsLatLon(r, maxdist, maxr=15., epsilons=40.,
+                        width_mid_stop=40.):
     """
     Create cell width array for this mesh on a locally refined latitude-longitude grid.
     Input
@@ -156,7 +157,6 @@ def sectionsrefVsLatLon(r, maxdist, maxr=15., epsilons=40.):
     # Parameters
     # ------------------------------
     slope = (maxr - r) / epsilons
-    width_mid_stop = epsilons
     final_res_dist = 1000
 
     # initialize with resolution = r (min resolution)
@@ -236,39 +236,30 @@ def viewcelWidth(cellWidth, lat, lon, name):
 
 
 def main():
-    """
-    name = 'jigsaw6'
+    name = 'test6'
 
     os.system('mkdir -p ' + name)
 
-    r = 1.
-    md = 10*r
-    slope = 1. / 7
-    cellWidth, lon, lat = localrefVsLatLon(r, maxdist=md, slope=slope,
-                                           gammas=500, maxepsilons=10000)
+    if 'jigsaw' in name:
+        r = 1.
+        md = 10*r
+        slope = 1. / 7
+        cellWidth, lon, lat = localrefVsLatLon(r, maxdist=md, slope=slope,
+                                               gammas=500, maxepsilons=10000)
+    else:
+        radi = 70
 
-    viewcelWidth(cellWidth, lat, lon, name + '/' + name)
+        r = 3.
+        maxr = 10
 
-    build_spherical_mesh(cellWidth, lon, lat,
-                         out_filename=name + '/' + name + '.nc')
+        md = 20
+        epsilons = radi + md
+        wms = maxr*6
 
-    os.system('./region.sh ' + name + '/' + name + '.nc')
-    """
-
-    name = 'sections4'
-
-    os.system('mkdir -p ' + name)
-
-    radi = 100
-
-    r = 1.
-    maxr = 20
-
-    md = 10*r
-    epsilons = radi - md
-    cellWidth, lon, lat = sectionsrefVsLatLon(r, maxdist=md,
-                                              maxr=maxr,
-                                              epsilons=epsilons)
+        cellWidth, lon, lat = sectionsrefVsLatLon(r, maxdist=md,
+                                                  maxr=maxr,
+                                                  epsilons=epsilons,
+                                                  width_mid_stop=wms)
 
     viewcelWidth(cellWidth, lat, lon, name + '/' + name)
 
