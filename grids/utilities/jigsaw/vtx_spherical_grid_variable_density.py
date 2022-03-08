@@ -236,7 +236,7 @@ def viewcelWidth(cellWidth, lat, lon, name):
 
 
 def main():
-    name = 'test6'
+    name = 'light2'
 
     os.system('mkdir -p ' + name)
 
@@ -247,13 +247,13 @@ def main():
         cellWidth, lon, lat = localrefVsLatLon(r, maxdist=md, slope=slope,
                                                gammas=500, maxepsilons=10000)
     else:
-        radi = 70
+        radi = 50
 
-        r = 3.
-        maxr = 10
+        r = 1.
+        maxr = 12
 
-        md = 20
-        epsilons = radi + md
+        md = 12
+        epsilons = radi - md + maxr*3
         wms = maxr*6
 
         cellWidth, lon, lat = sectionsrefVsLatLon(r, maxdist=md,
