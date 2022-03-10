@@ -15,11 +15,16 @@
 #
  
 import numpy as np
-from mpas_tools.ocean import build_spherical_mesh
 import numpy as np
 import matplotlib.pyplot as plt
 import xarray as xr
 import os
+
+import jigsaw_util as jutil
+
+from mpas_tools.mesh.creation.jigsaw_to_netcdf import jigsaw_to_netcdf
+from mpas_tools.mesh.conversion import convert
+from mpas_tools.io import write_netcdf
 
 
 def cellWidthVsLatLon():
@@ -235,39 +240,76 @@ def viewcelWidth(cellWidth, lat, lon, name):
         plt.close()
 
 
-def main():
-    name = 'light3'
+def main(name, resolution_args):
 
-    os.system('mkdir -p ' + name)
+    out_file_base = name + '/' + name + '.nc'
 
-    if 'jigsaw' in name:
-        r = 1.
-        md = 10*r
-        slope = 1. / 7
-        cellWidth, lon, lat = localrefVsLatLon(r, maxdist=md, slope=slope,
-                                               gammas=500, maxepsilons=10000)
+    directory = os.path.dirname(out_file_base)
+    os.system('mkdir -p ' + directory)
+
+    out_file_triangles = name + '/' + name + '.triangles.nc'
+    out_file_mpas = name + '/' + name + '.grid.nc'
+
+    if 'icos' in name:
+        mesh_file = jutil.jigsaw_gen_icos_grid(basename=out_file_base,
+                                               level=4)
     else:
-        radi = 50
+        if 'jigsaw' in name:
+            cellWidth, lon, lat = localrefVsLatLon(**resolution_args)
+        elif 'uniform' in name:
+            cellWidth, lon, lat = jutil.cellWidthVsLatLon(**resolution_args)
+        else:
+            cellWidth, lon, lat = sectionsrefVsLatLon(**resolution_args)
 
-        r = 3.
-        maxr = 12
+        viewcelWidth(cellWidth, lat, lon, name + '/' + name)
 
-        md = 20
-        epsilons = radi - md + maxr*3
-        wms = maxr*6
+        mesh_file = jutil.jigsaw_gen_sph_grid(cellWidth, lon, lat,
+                                              basename=out_file_base)
 
-        cellWidth, lon, lat = sectionsrefVsLatLon(r, maxdist=md,
-                                                  maxr=maxr,
-                                                  epsilons=epsilons,
-                                                  width_mid_stop=wms)
+    print(mesh_file)
+    jigsaw_to_netcdf(msh_filename=mesh_file,
+                     output_name=out_file_triangles,
+                     on_sphere=True, sphere_radius=1.0)
 
-    viewcelWidth(cellWidth, lat, lon, name + '/' + name)
+    write_netcdf(
+        convert(xr.open_dataset(out_file_triangles),
+                dir=directory,
+                graphInfoFileName=out_file_base + "_graph.info"),
+        out_file_mpas)
 
-    build_spherical_mesh(cellWidth, lon, lat,
-                         out_filename=name + '/' + name + '.nc')
+    with open('points.txt', 'w') as f:
+        f.write('Name: circle\n')
+        f.write('Type: circle\n')
+        f.write('Point: 0.0, 0.0\n')
+        f.write('radius: 50\n')
 
-    os.system('./region.sh ' + name + '/' + name + '.nc')
+    os.system('./MPAS-Limited-Area/create_region points.txt ' + out_file_mpas)
+    os.system('mv circle.grid.nc  ' + out_file_mpas + '-region')
 
 
 if __name__ == '__main__':
-    main()
+
+    name = 'uniform1'
+
+    if 'jigsaw' in name:
+        resolution_args = {
+            'r': 3,
+            'md': 10,
+            'slope': 1./7,
+            'gammas': 500,
+            'maxepsilons': 10000,
+        }
+    elif 'uniform' in name:
+        resolution_args = {
+            'r': 60,
+        }
+    else:
+        resolution_args = {
+            'r': 6,
+            'radi': 50,
+            'maxr': 12,
+            'md': 20,
+            'epsilons': 60,
+        }
+
+    main(name, resolution_args)
