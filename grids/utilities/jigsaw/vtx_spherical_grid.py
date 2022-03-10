@@ -19,6 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import xarray as xr
 import os
+import json
 
 import jigsaw_util as jutil
 
@@ -196,7 +197,7 @@ def sectionsrefVsLatLon(r, maxdist, maxr=15., epsilons=40.,
 
 def viewcelWidth(cellWidth, lat, lon, name):
 
-    kwargs = {'cmap': 'Spectral', 'vmin': 0, 'vmax': 20, 'levels': 21}
+
 
     print('View')
     lons, lats = np.meshgrid(lon, lat)
@@ -211,8 +212,8 @@ def viewcelWidth(cellWidth, lat, lon, name):
     ds2 = xr.Dataset({'resolution': ('distance', axis['resolution'].values)},
                      coords={'distance': axis['distance'].values})
 
-    ds2['resolution'].plot()
-    plt.savefig(name + '_bydistance.png')
+    ds2['resolution'].where(ds2['distance'] < 2500).plot()
+    plt.savefig(name + '_bydistanceless2500.png')
     plt.close()
 
     ds2['resolution'].where(ds2['distance'] < 500).plot()
@@ -224,28 +225,40 @@ def viewcelWidth(cellWidth, lat, lon, name):
     plt.close()
 
     # REGION
-    region = ds.sel(lat=slice(-1, 1), lon=slice(-1, 1))
+    region = ds.sel(lat=slice(-10, 10), lon=slice(-10, 10))
     print(region)
 
+    kwargs = {'cmap': 'Spectral', 'vmin': 0, 'vmax': 40, 'levels': 21}
+
     for dist in [500, 100, 50]:
-        region['resolution'].where(region['distance'] < dist).plot(**kwargs)
+        x = region['resolution'].where(region['distance'] < dist, drop=True)
+        x.plot(**kwargs)
         plt.title('Distance closer than ' + str(dist) + 'km')
         plt.savefig(name + '_less' + str(dist) + 'km.png')
         plt.close()
 
-    for res in [20, 10, 4]:
-        region['resolution'].where(region['resolution'] < res).plot(**kwargs)
+    for res in [30, 20, 10, 4]:
+        levels = res + 1
+        if levels < 25:
+            levels += levels
+        kwargs2 = {'cmap': 'Spectral', 'vmin': 0,
+                   'vmax': res, 'levels': levels}
+        region['resolution'].where(region['resolution'] < res,
+                                   drop=True).plot(**kwargs2)
         plt.title('Resolution lower than ' + str(res) + 'km')
         plt.savefig(name + '_res' + str(res) + 'km.png')
         plt.close()
 
 
-def main(name, resolution_args):
+def main(name, resolution_args, region_radius=None):
 
-    out_file_base = name + '/' + name + '.nc'
+    out_file_base = name + '/' + name
 
     directory = os.path.dirname(out_file_base)
     os.system('mkdir -p ' + directory)
+
+    with open(out_file_base + '.resolution_args.json', 'w') as fp:
+        json.dump(resolution_args, fp)
 
     out_file_triangles = name + '/' + name + '.triangles.nc'
     out_file_mpas = name + '/' + name + '.grid.nc'
@@ -254,7 +267,7 @@ def main(name, resolution_args):
         mesh_file = jutil.jigsaw_gen_icos_grid(basename=out_file_base,
                                                level=4)
     else:
-        if 'jigsaw' in name:
+        if 'jig' in name:
             cellWidth, lon, lat = localrefVsLatLon(**resolution_args)
         elif 'uniform' in name:
             cellWidth, lon, lat = jutil.cellWidthVsLatLon(**resolution_args)
@@ -266,7 +279,6 @@ def main(name, resolution_args):
         mesh_file = jutil.jigsaw_gen_sph_grid(cellWidth, lon, lat,
                                               basename=out_file_base)
 
-    print(mesh_file)
     jigsaw_to_netcdf(msh_filename=mesh_file,
                      output_name=out_file_triangles,
                      on_sphere=True, sphere_radius=1.0)
@@ -274,42 +286,49 @@ def main(name, resolution_args):
     write_netcdf(
         convert(xr.open_dataset(out_file_triangles),
                 dir=directory,
-                graphInfoFileName=out_file_base + "_graph.info"),
+                graphInfoFileName=out_file_base + ".graph.info"),
         out_file_mpas)
 
-    with open('points.txt', 'w') as f:
-        f.write('Name: circle\n')
-        f.write('Type: circle\n')
-        f.write('Point: 0.0, 0.0\n')
-        f.write('radius: 50\n')
+    if region_radius is not None:
+        with open(out_file_base + '.points.txt', 'w') as f:
+            f.write('Name: circle\n')
+            f.write('Type: circle\n')
+            f.write('Point: 0.0, 0.0\n')
+            f.write('radius: ' + str(region_radius) + '\n')
 
-    os.system('./MPAS-Limited-Area/create_region points.txt ' + out_file_mpas)
-    os.system('mv circle.grid.nc  ' + out_file_mpas + '-region')
+        os.system('./MPAS-Limited-Area/create_region ' + out_file_base +
+                  '.points.txt ' + out_file_mpas)
+        os.system('mv circle.grid.nc  ' + out_file_base + '.region.grid.nc')
+        os.system('mv circle.graph.info  ' + out_file_base + '.region.graph.info')
 
 
 if __name__ == '__main__':
 
-    name = 'uniform1'
+    name = 'li4'
 
-    if 'jigsaw' in name:
+    radius = 200
+
+    if 'jig' in name:
+        radius = 100
         resolution_args = {
             'r': 3,
-            'md': 10,
-            'slope': 1./7,
-            'gammas': 500,
-            'maxepsilons': 10000,
+            'maxdist': 20,
+            'slope': 25./120,
+            'gammas': 200,
+            'maxepsilons': 8000,
         }
     elif 'uniform' in name:
         resolution_args = {
             'r': 60,
         }
     else:
+        radius = 100
         resolution_args = {
-            'r': 6,
-            'radi': 50,
-            'maxr': 12,
-            'md': 20,
-            'epsilons': 60,
+            'r': 3,
+            'maxr': 25,
+            'maxdist': 25,
+            'epsilons': 160,
+            'width_mid_stop': 120,
         }
 
-    main(name, resolution_args)
+    main(name, resolution_args, region_radius=radius)
