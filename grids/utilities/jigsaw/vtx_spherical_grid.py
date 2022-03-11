@@ -5,7 +5,8 @@
 #  http://mpas-dev.github.io/MPAS-Tools/stable/mesh_creation.html#spherical-meshes
 #
 #   Install the conda enviroment MPAS-Tools
-# 1) Get the requirements https://github.com/pedrospeixoto/MPAS-Tools/blob/master/conda_package/dev-spec.txt
+# 1) Get the requirements https://github.com/pedrospeixoto/MPAS-Tools/blob
+# /master/conda_package/dev-spec.txt
 # 2) Create enviroment
 #     $ conda config --add channels conda-forge
 #     $ conda create --name mpas-tools --file dev-spec.txt 
@@ -13,8 +14,7 @@
 #     $ conda install mpas_tools
 # 4) Use it with $ conda activate mpas-tools
 #
- 
-import numpy as np
+
 import numpy as np
 import matplotlib.pyplot as plt
 import xarray as xr
