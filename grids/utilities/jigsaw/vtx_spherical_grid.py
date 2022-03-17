@@ -243,11 +243,14 @@ def viewcelWidth(cellWidth, lat, lon, name):
             levels += levels
         kwargs2 = {'cmap': 'Spectral', 'vmin': 0,
                    'vmax': res, 'levels': levels}
-        region['resolution'].where(region['resolution'] < res,
-                                   drop=True).plot(**kwargs2)
-        plt.title('Resolution lower than ' + str(res) + 'km')
-        plt.savefig(name + '_res' + str(res) + 'km.png')
-        plt.close()
+        try:
+            region['resolution'].where(region['resolution'] < res,
+                                       drop=True).plot(**kwargs2)
+            plt.title('Resolution lower than ' + str(res) + 'km')
+            plt.savefig(name + '_res' + str(res) + 'km.png')
+            plt.close()
+        except:
+            continue
 
 
 def main(name, resolution_args, region_radius=None):
@@ -304,7 +307,7 @@ def main(name, resolution_args, region_radius=None):
 
 if __name__ == '__main__':
 
-    name = 'li4'
+    name = 'sml3'
 
     radius = 200
 
@@ -322,13 +325,13 @@ if __name__ == '__main__':
             'r': 60,
         }
     else:
-        radius = 100
+        radius = 60
         resolution_args = {
-            'r': 3,
+            'r': 6,
             'maxr': 25,
-            'maxdist': 25,
-            'epsilons': 160,
-            'width_mid_stop': 120,
+            'maxdist': 40,
+            'epsilons': 90,
+            'width_mid_stop': 100,
         }
 
     main(name, resolution_args, region_radius=radius)
