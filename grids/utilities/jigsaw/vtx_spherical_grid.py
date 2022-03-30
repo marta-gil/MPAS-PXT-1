@@ -307,7 +307,7 @@ def main(name, resolution_args, region_radius=None):
 
 if __name__ == '__main__':
 
-    name = 'sml3'
+    name = 'bsc4'
 
     radius = 200
 
@@ -327,10 +327,10 @@ if __name__ == '__main__':
     else:
         radius = 60
         resolution_args = {
-            'r': 6,
-            'maxr': 25,
-            'maxdist': 40,
-            'epsilons': 90,
+            'r': 3,
+            'maxr': 26,
+            'maxdist': 25,
+            'epsilons': 110,
             'width_mid_stop': 100,
         }
 
