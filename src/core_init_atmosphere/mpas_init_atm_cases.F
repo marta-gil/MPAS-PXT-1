@@ -4605,7 +4605,8 @@ call mpas_log_write('Done with soil consistency check')
       end if
 
       call read_met_close()
-
+      ! MGB
+      call mpas_log_write('read_met_close()')
 
       if (allocated(maskslab)) deallocate(maskslab)
 
@@ -4622,6 +4623,8 @@ call mpas_log_write('Done with soil consistency check')
       seaice(:) = 0.0
       where (xice >= 0.5) seaice = 1.0
 
+      ! MGB
+      call mpas_log_write(' - really cold ocean frozen')
 
       !  
       ! Compute normal wind component and store in fg % u
@@ -4633,10 +4636,20 @@ call mpas_log_write('Done with soil consistency check')
          end do
       end do
 
+      ! MGB
+      call mpas_log_write(' - normal wind computed')
+
       !  
       ! Vertically interpolate meteorological data
       !  
       allocate(sorted_arr(2,nfglevels_actual))
+
+      ! MGB
+      call mpas_log_write(' - sorted_arr(2,nfglevels_actual) allocated')
+
+      ! MGB
+      call mpas_log_write(' - start loop by cells: vertical interpolation')
+      call mpas_log_write('Total num cells: $i', intArgs=(/nCells/))
 
       do iCell=1,nCells
 
@@ -4729,6 +4742,13 @@ call mpas_log_write('Done with soil consistency check')
 
       end do
 
+      ! MGB
+      call mpas_log_write(' -    -> end loop by cells')
+
+
+      ! MGB
+      call mpas_log_write(' - start loop by edges: vertical interpolation')
+      call mpas_log_write('Total num edges: $i', intArgs=(/nEdges/))
 
       do iEdge=1,nEdges
 
@@ -4763,6 +4783,9 @@ call mpas_log_write('Done with soil consistency check')
                             uReconstructMeridional   &
                            )
    
+      ! MGB
+      call mpas_log_write(' - u and v reconstructed to centers')
+
 
       !
       ! Adjust surface pressure for difference in topography
@@ -4787,6 +4810,9 @@ call mpas_log_write('Done with soil consistency check')
             psfc(iCell) = exp(vertical_interp(target_z, nfglevels_actual, sorted_arr, order=1, extrap=1))
 
       end do
+
+      ! MGB
+      call mpas_log_write(' - surface pressure adjusted')
 
       deallocate(sorted_arr)
 
