@@ -4669,6 +4669,10 @@ call mpas_log_write('Done with soil consistency check')
             ! MGB
             call mpas_log_write('   level: $i', intArgs=(/k/))
 
+            ! MGB
+            call mpas_log_write('   z down: $r', realArgs=(/zgrid(k,iCell)/))
+            call mpas_log_write('   z up: $r', realArgs=(/zgrid(k+1,iCell)/))
+
             target_z = 0.5 * (zgrid(k,iCell) + zgrid(k+1,iCell))
 
             ! MGB
