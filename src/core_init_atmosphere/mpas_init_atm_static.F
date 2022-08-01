@@ -362,6 +362,15 @@
  end do
 
  do iCell = 1,nCells
+    !MGB Test that no cells are empty of terrain data
+    if (nhs(iCell) == 0) then
+        call mpas_log_write('--- Cell $i was not filled by any topo', intArgs=(/iCell/))
+        call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+        call mpas_log_write('Invalid topography dataset: at least one cell has NaN terrain    ', messageType=MPAS_LOG_ERR)
+        call mpas_log_write('   This happens because the grid-spacing is finer than in the reference topo dataset.', messageType=MPAS_LOG_ERR)
+        call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+        call mpas_log_write('Use finer reference topo or modify the code.', messageType=MPAS_LOG_CRIT)
+    end if
     ter(iCell) = ter(iCell) / real(nhs(iCell))
  end do
  deallocate(rarray)
