@@ -4659,19 +4659,20 @@ call mpas_log_write('Done with soil consistency check')
          ! T
          sorted_arr(:,:) = -999.0
          do k = 1, nfglevels_actual
-            ! MGB
-            call mpas_log_write('   level: $i', intArgs=(/k/))
-
             sorted_arr(1,k) = z_fg(k,iCell)
             if (vert_level(k) == 200100.0) sorted_arr(1,k) = 99999.0
             sorted_arr(2,k) = t_fg(k,iCell)
          end do
          call mpas_quicksort(nfglevels_actual, sorted_arr)
-         ! MGB
-         call mpas_log_write('quicksorted')
 
          do k = 1, nVertLevels
+            ! MGB
+            call mpas_log_write('   level: $i', intArgs=(/k/))
+
             target_z = 0.5 * (zgrid(k,iCell) + zgrid(k+1,iCell))
+
+            ! MGB
+            call mpas_log_write('   z: $r', realArgs=(/target_z/))
             t(k,iCell) = vertical_interp(target_z, nfglevels_actual-1, &
                                          sorted_arr(:,1:nfglevels_actual-1), order=1, &
                                          extrap=extrap_airtemp, ierr=istatus)
