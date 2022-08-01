@@ -4653,14 +4653,23 @@ call mpas_log_write('Done with soil consistency check')
 
       do iCell=1,nCells
 
+         ! MGB
+         call mpas_log_write('Cell number: $i', intArgs=(/iCell/))
+         call mpas_log_write('Temperature')
          ! T
          sorted_arr(:,:) = -999.0
          do k = 1, nfglevels_actual
+            ! MGB
+            call mpas_log_write('   level: $i', intArgs=(/k/))
+
             sorted_arr(1,k) = z_fg(k,iCell)
             if (vert_level(k) == 200100.0) sorted_arr(1,k) = 99999.0
             sorted_arr(2,k) = t_fg(k,iCell)
          end do
          call mpas_quicksort(nfglevels_actual, sorted_arr)
+         ! MGB
+         call mpas_log_write('quicksorted')
+
          do k = 1, nVertLevels
             target_z = 0.5 * (zgrid(k,iCell) + zgrid(k+1,iCell))
             t(k,iCell) = vertical_interp(target_z, nfglevels_actual-1, &
@@ -4675,6 +4684,8 @@ call mpas_log_write('Done with soil consistency check')
          end do
 
 
+         ! MGB
+         call mpas_log_write('RH')
          ! RH
          sorted_arr(:,:) = -999.0
          relhum(:,iCell) = 0._RKIND
@@ -4691,6 +4702,8 @@ call mpas_log_write('Done with soil consistency check')
          end do
 
 
+         ! MGB
+         call mpas_log_write('SPECHUM')
          ! SPECHUM: if first-guess values are negative, set those values to zero before
          ! vertical interpolation.
          sorted_arr(:,:) = -999.0
@@ -4707,7 +4720,8 @@ call mpas_log_write('Done with soil consistency check')
                                         sorted_arr(:,1:nfglevels_actual-1), order=1, extrap=0)
          end do
 
-
+         ! MGB
+         call mpas_log_write('GHT')
          ! GHT
          sorted_arr(:,:) = -999.0
          do k = 1, nfglevels_actual
@@ -4724,6 +4738,8 @@ call mpas_log_write('Done with soil consistency check')
 
 
          ! PRESSURE
+         ! MGB
+         call mpas_log_write('PRESSURE')
          sorted_arr(:,:) = -999.0
          do k = 1, nfglevels_actual
             sorted_arr(1,k) = z_fg(k,iCell)
