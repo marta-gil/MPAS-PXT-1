@@ -328,9 +328,6 @@ call mpas_log_write('')
     !MGB Do we need to check this latitude?
     mintile_lat = start_lat + (jTileStart + (4) - 5) * 0.0083333333
     maxtile_lat = start_lat + (jTileStart + (ny-3) - 5) * 0.0083333333
-    call mpas_log_write('* Latitude Loop: $r', intArgs=(/jTileStart/))
-    call mpas_log_write('From $r', realArgs=(/mintile_lat/))
-    call mpas_log_write('  to mintile_lat= $r', realArgs=(/maxtile_lat/))
     if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
 
         do iTileStart=1,42001,nx-6
@@ -339,9 +336,6 @@ call mpas_log_write('')
            !MGB Do we need to check this longitude?
            mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
            maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
-           call mpas_log_write('* Longitude Loop: $r', intArgs=(/iTileStart/))
-           call mpas_log_write('From $r', realArgs=(/mintile_lon/))
-           call mpas_log_write('  to mintile_lat= $r', realArgs=(/maxtile_lon/))
            if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
 
                write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
@@ -393,14 +387,14 @@ call mpas_log_write('')
 
             !MGB end if we need to loop through this lon
             else
-               call mpas_log_write('Skip longitude folder $i', intArgs=(/iTileStart/))
+               call mpas_log_write('Skip longitude folder from $r to $r', intArgs=(/iTileStart/), realArgs=(/mintile_lon,maxtile_lon/))
             end if
 
         end do
 
     !MGB end if we need to loop through this lat
     else
-        call mpas_log_write('Skip latitude folder $i', intArgs=(/jTileStart/))
+        call mpas_log_write('Skip latitude folder from $r to $r', intArgs=(/iTileStart/), realArgs=(/mintile_lat,maxtile_lat/))
     end if
  end do
 
@@ -461,9 +455,6 @@ call mpas_log_write('')
     !MGB Do we need to check this latitude?
     mintile_lat = start_lat + (jTileStart + (1) - 5) * 0.0083333333
     maxtile_lat = start_lat + (jTileStart + (ny) - 5) * 0.0083333333
-    call mpas_log_write('* Latitude Loop: $r', intArgs=(/jTileStart/))
-    call mpas_log_write('From $r', realArgs=(/mintile_lat/))
-    call mpas_log_write('  to mintile_lat= $r', realArgs=(/maxtile_lat/))
     if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
 
         do iTileStart = 1,42001,nx
@@ -472,9 +463,6 @@ call mpas_log_write('')
            !MGB Do we need to check this longitude?
            mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
            maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
-           call mpas_log_write('* Longitude Loop: $r', intArgs=(/iTileStart/))
-           call mpas_log_write('From $r', realArgs=(/mintile_lon/))
-           call mpas_log_write('  to mintile_lat= $r', realArgs=(/maxtile_lon/))
            if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
 
                write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)// &
@@ -531,14 +519,14 @@ call mpas_log_write('')
 
             !MGB end if we need to loop through this lon
             else
-               call mpas_log_write('Skip longitude folder $i', intArgs=(/iTileStart/))
+               call mpas_log_write('Skip longitude folder from $r to $r', intArgs=(/iTileStart/), realArgs=(/mintile_lon,maxtile_lon/))
             end if
 
         end do
 
     !MGB end if we need to loop through this lat
     else
-        call mpas_log_write('Skip latitude folder $i', intArgs=(/jTileStart/))
+        call mpas_log_write('Skip latitude folder from $r to $r', intArgs=(/iTileStart/), realArgs=(/mintile_lat,maxtile_lat/))
     end if
  end do
 
@@ -588,56 +576,78 @@ call mpas_log_write('')
  do jTileStart = 1,20401,ny
     jTileEnd = jTileStart + ny - 1
 
-    do iTileStart = 1,42001,nx
-       iTileEnd = iTileStart + nx - 1
-       write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)// &
-             'soiltype_top_30s/',iTileStart,'-',iTileEnd,'.',jTileStart,'-',jTileEnd
-       call mpas_log_write(trim(fname))
-       call mpas_f_to_c_string(fname, c_fname)
+    !MGB Do we need to check this latitude?
+    mintile_lat = start_lat + (jTileStart + (1) - 5) * 0.0083333333
+    maxtile_lat = start_lat + (jTileStart + (ny) - 5) * 0.0083333333
+    if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
 
-       call read_geogrid(c_fname,rarray_ptr,nx,ny,nz,isigned,endian, &
-                         scalefactor,wordsize,istatus)
-       call init_atm_check_read_error(istatus, fname)
+        do iTileStart = 1,42001,nx
+           iTileEnd = iTileStart + nx - 1
 
-       iPoint = 1
-       do j=1,ny
-       do i=1,nx
-          lat_pt = -89.99583  + (jTileStart + j - 2) * 0.0083333333
-          lon_pt = -179.99583 + (iTileStart + i - 2) * 0.0083333333
-          lat_pt = lat_pt * PI / 180.0
-          lon_pt = lon_pt * PI / 180.0
+           !MGB Do we need to check this longitude?
+           mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
+           maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
+           if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
 
-          iPoint = nearest_cell(lat_pt,lon_pt,iPoint,nCells,maxEdges, &
-                                nEdgesOnCell,cellsOnCell, &
-                                latCell,lonCell)
+               write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)// &
+                     'soiltype_top_30s/',iTileStart,'-',iTileEnd,'.',jTileStart,'-',jTileEnd
+               call mpas_log_write(trim(fname))
+               call mpas_f_to_c_string(fname, c_fname)
 
-          !
-          ! For all but the outermost boundary cells, we can safely assume that the nearest
-          ! model grid cell contains the pixel (else, a different cell would be nearest)
-          !
-          if (bdyMaskCell(iPoint) < nBdyLayers) then
-             ncat(int(rarray(i,j,1)),iPoint) = ncat(int(rarray(i,j,1)),iPoint) + 1
-             nhs(iPoint) = nhs(iPoint) + 1
+               call read_geogrid(c_fname,rarray_ptr,nx,ny,nz,isigned,endian, &
+                                 scalefactor,wordsize,istatus)
+               call init_atm_check_read_error(istatus, fname)
 
-          ! For outermost boundary cells, additional work is needed to verify that the pixel
-          ! actually lies within the nearest cell
-          else
-             zPixel = sphere_radius * sin(lat_pt)                  ! Model cell coordinates assume a "full" sphere radius
-             xPixel = sphere_radius * cos(lon_pt) * cos(lat_pt)    ! at this point, so we need to ues the same radius
-             yPixel = sphere_radius * sin(lon_pt) * cos(lat_pt)    ! for source pixel coordinates
+               iPoint = 1
+               do j=1,ny
+               do i=1,nx
+                  lat_pt = -89.99583  + (jTileStart + j - 2) * 0.0083333333
+                  lon_pt = -179.99583 + (iTileStart + i - 2) * 0.0083333333
+                  lat_pt = lat_pt * PI / 180.0
+                  lon_pt = lon_pt * PI / 180.0
 
-             if (in_cell(xPixel, yPixel, zPixel, xCell(iPoint), yCell(iPoint), zCell(iPoint), &
-                         nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
+                  iPoint = nearest_cell(lat_pt,lon_pt,iPoint,nCells,maxEdges, &
+                                        nEdgesOnCell,cellsOnCell, &
+                                        latCell,lonCell)
 
-                ncat(int(rarray(i,j,1)),iPoint) = ncat(int(rarray(i,j,1)),iPoint) + 1
-                nhs(iPoint) = nhs(iPoint) + 1
+                  !
+                  ! For all but the outermost boundary cells, we can safely assume that the nearest
+                  ! model grid cell contains the pixel (else, a different cell would be nearest)
+                  !
+                  if (bdyMaskCell(iPoint) < nBdyLayers) then
+                     ncat(int(rarray(i,j,1)),iPoint) = ncat(int(rarray(i,j,1)),iPoint) + 1
+                     nhs(iPoint) = nhs(iPoint) + 1
 
-             end if
-          end if
-       end do
-       end do
+                  ! For outermost boundary cells, additional work is needed to verify that the pixel
+                  ! actually lies within the nearest cell
+                  else
+                     zPixel = sphere_radius * sin(lat_pt)                  ! Model cell coordinates assume a "full" sphere radius
+                     xPixel = sphere_radius * cos(lon_pt) * cos(lat_pt)    ! at this point, so we need to ues the same radius
+                     yPixel = sphere_radius * sin(lon_pt) * cos(lat_pt)    ! for source pixel coordinates
 
-    end do
+                     if (in_cell(xPixel, yPixel, zPixel, xCell(iPoint), yCell(iPoint), zCell(iPoint), &
+                                 nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
+
+                        ncat(int(rarray(i,j,1)),iPoint) = ncat(int(rarray(i,j,1)),iPoint) + 1
+                        nhs(iPoint) = nhs(iPoint) + 1
+
+                     end if
+                  end if
+               end do
+               end do
+
+
+           !MGB end if we need to loop through this lon
+           else
+              call mpas_log_write('Skip longitude folder from $r to $r', intArgs=(/iTileStart/), realArgs=(/mintile_lon,maxtile_lon/))
+           end if
+
+        end do
+
+    !MGB end if we need to loop through this lat
+    else
+        call mpas_log_write('Skip latitude folder from $r to $r', intArgs=(/iTileStart/), realArgs=(/mintile_lat,maxtile_lat/))
+    end if
  end do
 
  do iCell = 1,nCells
@@ -807,60 +817,81 @@ call mpas_log_write('')
     do jTileStart = 1,02401,ny-6
        jTileEnd = jTileStart + ny - 1 - 6
 
-       do iTileStart=1,06001,nx-6
-          iTileEnd = iTileStart + nx - 1 - 6
-          write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
-                       iTileStart,'-',iTileEnd,'.',jTileStart,'-',jTileEnd
-          call mpas_log_write(trim(fname))
-          call mpas_f_to_c_string(fname, c_fname)
+        !MGB Do we need to check this latitude?
+        mintile_lat = start_lat + (jTileStart + (1) - 5) * 0.0083333333
+        maxtile_lat = start_lat + (jTileStart + (ny) - 5) * 0.0083333333
+        if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
 
-          call read_geogrid(c_fname,rarray_ptr,nx,ny,nz,isigned,endian, &
-                            scalefactor,wordsize,istatus)
-          call init_atm_check_read_error(istatus, fname)
+           do iTileStart=1,06001,nx-6
+              iTileEnd = iTileStart + nx - 1 - 6
 
-          iPoint = 1
-          do j=supersample_fac * 3 + 1, supersample_fac * (ny-3)
-          do i=supersample_fac * 3 + 1, supersample_fac * (nx-3)
-             ii = (i - 1) / supersample_fac + 1
-             jj = (j - 1) / supersample_fac + 1
+              !MGB Do we need to check this longitude?
+               mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
+               maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
+               if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
 
-             lat_pt = start_lat - (supersample_fac*(jTileStart-1) + j - (supersample_fac*3+1)) * 0.05 / supersample_fac
-             lon_pt = start_lon + (supersample_fac*(iTileStart-1) + i - (supersample_fac*3+1)) * 0.05 / supersample_fac
-             lat_pt = lat_pt * PI / 180.0
-             lon_pt = lon_pt * PI / 180.0
+                  write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
+                               iTileStart,'-',iTileEnd,'.',jTileStart,'-',jTileEnd
+                  call mpas_log_write(trim(fname))
+                  call mpas_f_to_c_string(fname, c_fname)
 
-             iPoint = nearest_cell(lat_pt,lon_pt,iPoint,nCells,maxEdges, &
-                                   nEdgesOnCell,cellsOnCell, &
-                                   latCell,lonCell)
-             if (rarray(ii,jj,1) /= msgval) then
+                  call read_geogrid(c_fname,rarray_ptr,nx,ny,nz,isigned,endian, &
+                                    scalefactor,wordsize,istatus)
+                  call init_atm_check_read_error(istatus, fname)
 
-                !
-                ! This field only matters for land cells, and for all but the outermost boundary cells,
-                ! we can safely assume that the nearest model grid cell contains the pixel (else, a different
-                ! cell would be nearest)
-                !
-                if (landmask(iPoint) == 1 .and. bdyMaskCell(iPoint) < nBdyLayers) then
-                   snoalb(iPoint) = snoalb(iPoint) + rarray(ii,jj,1)
-                   nhs(iPoint) = nhs(iPoint) + 1
+                  iPoint = 1
+                  do j=supersample_fac * 3 + 1, supersample_fac * (ny-3)
+                  do i=supersample_fac * 3 + 1, supersample_fac * (nx-3)
+                     ii = (i - 1) / supersample_fac + 1
+                     jj = (j - 1) / supersample_fac + 1
 
-                ! For outermost land cells, additional work is needed to verify that the pixel
-                ! actually lies within the nearest cell
-                else if (landmask(iPoint) == 1) then
-                   zPixel = sphere_radius * sin(lat_pt)                  ! Model cell coordinates assume a "full" sphere radius
-                   xPixel = sphere_radius * cos(lon_pt) * cos(lat_pt)    ! at this point, so we need to ues the same radius
-                   yPixel = sphere_radius * sin(lon_pt) * cos(lat_pt)    ! for source pixel coordinates
+                     lat_pt = start_lat - (supersample_fac*(jTileStart-1) + j - (supersample_fac*3+1)) * 0.05 / supersample_fac
+                     lon_pt = start_lon + (supersample_fac*(iTileStart-1) + i - (supersample_fac*3+1)) * 0.05 / supersample_fac
+                     lat_pt = lat_pt * PI / 180.0
+                     lon_pt = lon_pt * PI / 180.0
 
-                   if (in_cell(xPixel, yPixel, zPixel, xCell(iPoint), yCell(iPoint), zCell(iPoint), &
-                               nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
-                      snoalb(iPoint) = snoalb(iPoint) + rarray(ii,jj,1)
-                      nhs(iPoint) = nhs(iPoint) + 1
-                   end if
-                end if
-             end if
-          end do
-          end do
+                     iPoint = nearest_cell(lat_pt,lon_pt,iPoint,nCells,maxEdges, &
+                                           nEdgesOnCell,cellsOnCell, &
+                                           latCell,lonCell)
+                     if (rarray(ii,jj,1) /= msgval) then
 
-       end do
+                        !
+                        ! This field only matters for land cells, and for all but the outermost boundary cells,
+                        ! we can safely assume that the nearest model grid cell contains the pixel (else, a different
+                        ! cell would be nearest)
+                        !
+                        if (landmask(iPoint) == 1 .and. bdyMaskCell(iPoint) < nBdyLayers) then
+                           snoalb(iPoint) = snoalb(iPoint) + rarray(ii,jj,1)
+                           nhs(iPoint) = nhs(iPoint) + 1
+
+                        ! For outermost land cells, additional work is needed to verify that the pixel
+                        ! actually lies within the nearest cell
+                        else if (landmask(iPoint) == 1) then
+                           zPixel = sphere_radius * sin(lat_pt)                  ! Model cell coordinates assume a "full" sphere radius
+                           xPixel = sphere_radius * cos(lon_pt) * cos(lat_pt)    ! at this point, so we need to ues the same radius
+                           yPixel = sphere_radius * sin(lon_pt) * cos(lat_pt)    ! for source pixel coordinates
+
+                           if (in_cell(xPixel, yPixel, zPixel, xCell(iPoint), yCell(iPoint), zCell(iPoint), &
+                                       nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
+                              snoalb(iPoint) = snoalb(iPoint) + rarray(ii,jj,1)
+                              nhs(iPoint) = nhs(iPoint) + 1
+                           end if
+                        end if
+                     end if
+                  end do
+                  end do
+
+               !MGB end if we need to loop through this lon
+               else
+                   call mpas_log_write('Skip longitude folder from $r to $r', intArgs=(/iTileStart/), realArgs=(/mintile_lon,maxtile_lon/))
+               end if
+
+           end do
+
+        !MGB end if we need to loop through this lat
+        else
+            call mpas_log_write('Skip latitude folder from $r to $r', intArgs=(/iTileStart/), realArgs=(/mintile_lat,maxtile_lat/))
+        end if
     end do
 
     do iCell = 1,nCells
@@ -1011,71 +1042,93 @@ call mpas_log_write('')
     do jTileStart = 1,20401,ny
        jTileEnd = jTileStart + ny - 1
 
-       do iTileStart=1,42001,nx
-          iTileEnd = iTileStart + nx - 1
-          write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
-                       iTileStart,'-',iTileEnd,'.',jTileStart,'-',jTileEnd
-          call mpas_log_write(trim(fname))
-          call mpas_f_to_c_string(fname, c_fname)
+       !MGB Do we need to check this latitude?
+       mintile_lat = start_lat + (jTileStart + (1) - 5) * 0.0083333333
+       maxtile_lat = start_lat + (jTileStart + (ny) - 5) * 0.0083333333
+       if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
 
-          call read_geogrid(c_fname,rarray_ptr,nx,ny,nz,isigned,endian, &
-                            scalefactor,wordsize,istatus)
-          call init_atm_check_read_error(istatus, fname)
+           do iTileStart=1,42001,nx
+              iTileEnd = iTileStart + nx - 1
 
-          iPoint = 1
-          do j=1,ny
-          do i=1,nx
-             lat_pt = start_lat + (jTileStart + j - 2) * 0.0083333333
-             lon_pt = start_lon + (iTileStart + i - 2) * 0.0083333333
-             lat_pt = lat_pt * PI / 180.0
-             lon_pt = lon_pt * PI / 180.0
+              !MGB Do we need to check this longitude?
+              mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
+              maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
+              if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
 
-             iPoint = nearest_cell(lat_pt,lon_pt,iPoint,nCells,maxEdges, &
-                                   nEdgesOnCell,cellsOnCell, &
-                                   latCell,lonCell)
+                  write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
+                               iTileStart,'-',iTileEnd,'.',jTileStart,'-',jTileEnd
+                  call mpas_log_write(trim(fname))
+                  call mpas_f_to_c_string(fname, c_fname)
 
-             !
-             ! This field only matters for land cells, and for all but the outermost boundary cells,
-             ! we can safely assume that the nearest model grid cell contains the pixel (else, a different
-             ! cell would be nearest)
-             !
-             !MGB For landmask different than land (1) we put the fillval
-             if (landmask(iPoint) /= 1) then
-                do k=1,nz
-                   greenfrac(k,iPoint) = greenfrac(k,iPoint) + fillval
-                end do
-                nhs(iPoint) = nhs(iPoint) + 1
-             else if (bdyMaskCell(iPoint) < nBdyLayers) then
-                do k=1,nz
-                   if (rarray(i,j,k) == msgval) then
-                      rarray(i,j,k) = fillval
-                   end if
-                   greenfrac(k,iPoint) = greenfrac(k,iPoint) + rarray(i,j,k)
-                end do
-                nhs(iPoint) = nhs(iPoint) + 1
+                  call read_geogrid(c_fname,rarray_ptr,nx,ny,nz,isigned,endian, &
+                                    scalefactor,wordsize,istatus)
+                  call init_atm_check_read_error(istatus, fname)
 
-             ! For outermost land cells, additional work is needed to verify that the pixel
-             ! actually lies within the nearest cell
-             else
-                zPixel = sphere_radius * sin(lat_pt)                  ! Model cell coordinates assume a "full" sphere radius
-                xPixel = sphere_radius * cos(lon_pt) * cos(lat_pt)    ! at this point, so we need to ues the same radius
-                yPixel = sphere_radius * sin(lon_pt) * cos(lat_pt)    ! for source pixel coordinates
+                  iPoint = 1
+                  do j=1,ny
+                  do i=1,nx
+                     lat_pt = start_lat + (jTileStart + j - 2) * 0.0083333333
+                     lon_pt = start_lon + (iTileStart + i - 2) * 0.0083333333
+                     lat_pt = lat_pt * PI / 180.0
+                     lon_pt = lon_pt * PI / 180.0
 
-                if (in_cell(xPixel, yPixel, zPixel, xCell(iPoint), yCell(iPoint), zCell(iPoint), &
-                            nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
-                   do k=1,nz
-                      if (rarray(i,j,k) == msgval) then
-                         rarray(i,j,k) = fillval
-                      end if
-                      greenfrac(k,iPoint) = greenfrac(k,iPoint) + rarray(i,j,k)
-                   end do
-                   nhs(iPoint) = nhs(iPoint) + 1
-                end if
-             end if
-          end do
-          end do
+                     iPoint = nearest_cell(lat_pt,lon_pt,iPoint,nCells,maxEdges, &
+                                           nEdgesOnCell,cellsOnCell, &
+                                           latCell,lonCell)
 
-       end do
+                     !
+                     ! This field only matters for land cells, and for all but the outermost boundary cells,
+                     ! we can safely assume that the nearest model grid cell contains the pixel (else, a different
+                     ! cell would be nearest)
+                     !
+                     !MGB For landmask different than land (1) we put the fillval
+                     if (landmask(iPoint) /= 1) then
+                        do k=1,nz
+                           greenfrac(k,iPoint) = greenfrac(k,iPoint) + fillval
+                        end do
+                        nhs(iPoint) = nhs(iPoint) + 1
+                     else if (bdyMaskCell(iPoint) < nBdyLayers) then
+                        do k=1,nz
+                           if (rarray(i,j,k) == msgval) then
+                              rarray(i,j,k) = fillval
+                           end if
+                           greenfrac(k,iPoint) = greenfrac(k,iPoint) + rarray(i,j,k)
+                        end do
+                        nhs(iPoint) = nhs(iPoint) + 1
+
+                     ! For outermost land cells, additional work is needed to verify that the pixel
+                     ! actually lies within the nearest cell
+                     else
+                        zPixel = sphere_radius * sin(lat_pt)                  ! Model cell coordinates assume a "full" sphere radius
+                        xPixel = sphere_radius * cos(lon_pt) * cos(lat_pt)    ! at this point, so we need to ues the same radius
+                        yPixel = sphere_radius * sin(lon_pt) * cos(lat_pt)    ! for source pixel coordinates
+
+                        if (in_cell(xPixel, yPixel, zPixel, xCell(iPoint), yCell(iPoint), zCell(iPoint), &
+                                    nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
+                           do k=1,nz
+                              if (rarray(i,j,k) == msgval) then
+                                 rarray(i,j,k) = fillval
+                              end if
+                              greenfrac(k,iPoint) = greenfrac(k,iPoint) + rarray(i,j,k)
+                           end do
+                           nhs(iPoint) = nhs(iPoint) + 1
+                        end if
+                     end if
+                  end do
+                  end do
+
+              !MGB end if we need to loop through this lon
+              else
+                 call mpas_log_write('Skip longitude folder from $r to $r', intArgs=(/iTileStart/), realArgs=(/mintile_lon,maxtile_lon/))
+              end if
+
+           end do
+
+       !MGB end if we need to loop through this lat
+       else
+           call mpas_log_write('Skip latitude folder from $r to $r', intArgs=(/iTileStart/), realArgs=(/mintile_lat,maxtile_lat/))
+       end if
+
     end do
 
     do iCell = 1,nCells
@@ -1220,75 +1273,96 @@ call mpas_log_write('')
     do jTileStart = 1,02401,ny-6
        jTileEnd = jTileStart + ny - 1 - 6
 
-       do iTileStart=1,06001,nx-6
-          iTileEnd = iTileStart + nx - 1 - 6
-          write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
-                       iTileStart,'-',iTileEnd,'.',jTileStart,'-',jTileEnd
-          call mpas_log_write(trim(fname))
-          call mpas_f_to_c_string(fname, c_fname)
+       !MGB Do we need to check this latitude?
+        mintile_lat = start_lat + (jTileStart + (1) - 5) * 0.0083333333
+        maxtile_lat = start_lat + (jTileStart + (ny) - 5) * 0.0083333333
+        if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
 
-          call read_geogrid(c_fname,rarray_ptr,nx,ny,nz,isigned,endian, &
-                            scalefactor,wordsize,istatus)
-          call init_atm_check_read_error(istatus, fname)
+           do iTileStart=1,06001,nx-6
+              iTileEnd = iTileStart + nx - 1 - 6
 
-          iPoint = 1
-          do j=supersample_fac * 3 + 1, supersample_fac * (ny-3)
-          do i=supersample_fac * 3 + 1, supersample_fac * (nx-3)
-             ii = (i - 1) / supersample_fac + 1
-             jj = (j - 1) / supersample_fac + 1
+              !MGB Do we need to check this longitude?
+               mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
+               maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
+               if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
 
-             lat_pt = start_lat - (supersample_fac*(jTileStart-1) + j - (supersample_fac*3+1)) * 0.05 / supersample_fac
-             lon_pt = start_lon + (supersample_fac*(iTileStart-1) + i - (supersample_fac*3+1)) * 0.05 / supersample_fac
-             lat_pt = lat_pt * PI / 180.0
-             lon_pt = lon_pt * PI / 180.0
+                  write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
+                               iTileStart,'-',iTileEnd,'.',jTileStart,'-',jTileEnd
+                  call mpas_log_write(trim(fname))
+                  call mpas_f_to_c_string(fname, c_fname)
 
-             iPoint = nearest_cell(lat_pt,lon_pt,iPoint,nCells,maxEdges, &
-                                   nEdgesOnCell,cellsOnCell, &
-                                   latCell,lonCell)
+                  call read_geogrid(c_fname,rarray_ptr,nx,ny,nz,isigned,endian, &
+                                    scalefactor,wordsize,istatus)
+                  call init_atm_check_read_error(istatus, fname)
 
-             !
-             ! This field only matters for land cells, and for all but the outermost boundary cells,
-             ! we can safely assume that the nearest model grid cell contains the pixel (else, a different
-             ! cell would be nearest)
-             !
-             !MGB For landmask different than land (1) we put the fillval
-             if (landmask(iPoint) /= 1) then
-                do k=1,nz
-                   albedo12m(k,iPoint) = albedo12m(k,iPoint) + fillval
-                end do
-                nhs(iPoint) = nhs(iPoint) + 1
+                  iPoint = 1
+                  do j=supersample_fac * 3 + 1, supersample_fac * (ny-3)
+                  do i=supersample_fac * 3 + 1, supersample_fac * (nx-3)
+                     ii = (i - 1) / supersample_fac + 1
+                     jj = (j - 1) / supersample_fac + 1
 
-             else if (bdyMaskCell(iPoint) < nBdyLayers) then
-                do k=1,nz
-                   if (rarray(ii,jj,k) == msgval) then
-                      rarray(ii,jj,k) = fillval
-                   end if
-                   albedo12m(k,iPoint) = albedo12m(k,iPoint) + rarray(ii,jj,k)
-                end do
-                nhs(iPoint) = nhs(iPoint) + 1
+                     lat_pt = start_lat - (supersample_fac*(jTileStart-1) + j - (supersample_fac*3+1)) * 0.05 / supersample_fac
+                     lon_pt = start_lon + (supersample_fac*(iTileStart-1) + i - (supersample_fac*3+1)) * 0.05 / supersample_fac
+                     lat_pt = lat_pt * PI / 180.0
+                     lon_pt = lon_pt * PI / 180.0
 
-             ! For outermost land cells, additional work is needed to verify that the pixel
-             ! actually lies within the nearest cell
-             else
-                zPixel = sphere_radius * sin(lat_pt)                  ! Model cell coordinates assume a "full" sphere radius
-                xPixel = sphere_radius * cos(lon_pt) * cos(lat_pt)    ! at this point, so we need to ues the same radius
-                yPixel = sphere_radius * sin(lon_pt) * cos(lat_pt)    ! for source pixel coordinates
+                     iPoint = nearest_cell(lat_pt,lon_pt,iPoint,nCells,maxEdges, &
+                                           nEdgesOnCell,cellsOnCell, &
+                                           latCell,lonCell)
 
-                if (in_cell(xPixel, yPixel, zPixel, xCell(iPoint), yCell(iPoint), zCell(iPoint), &
-                            nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
-                   do k=1,nz
-                      if (rarray(ii,jj,k) == msgval) then
-                         rarray(ii,jj,k) = fillval
-                      end if
-                      albedo12m(k,iPoint) = albedo12m(k,iPoint) + rarray(ii,jj,k)
-                   end do
-                   nhs(iPoint) = nhs(iPoint) + 1
-                end if
-             end if
-          end do
-          end do
+                     !
+                     ! This field only matters for land cells, and for all but the outermost boundary cells,
+                     ! we can safely assume that the nearest model grid cell contains the pixel (else, a different
+                     ! cell would be nearest)
+                     !
+                     !MGB For landmask different than land (1) we put the fillval
+                     if (landmask(iPoint) /= 1) then
+                        do k=1,nz
+                           albedo12m(k,iPoint) = albedo12m(k,iPoint) + fillval
+                        end do
+                        nhs(iPoint) = nhs(iPoint) + 1
 
-       end do
+                     else if (bdyMaskCell(iPoint) < nBdyLayers) then
+                        do k=1,nz
+                           if (rarray(ii,jj,k) == msgval) then
+                              rarray(ii,jj,k) = fillval
+                           end if
+                           albedo12m(k,iPoint) = albedo12m(k,iPoint) + rarray(ii,jj,k)
+                        end do
+                        nhs(iPoint) = nhs(iPoint) + 1
+
+                     ! For outermost land cells, additional work is needed to verify that the pixel
+                     ! actually lies within the nearest cell
+                     else
+                        zPixel = sphere_radius * sin(lat_pt)                  ! Model cell coordinates assume a "full" sphere radius
+                        xPixel = sphere_radius * cos(lon_pt) * cos(lat_pt)    ! at this point, so we need to ues the same radius
+                        yPixel = sphere_radius * sin(lon_pt) * cos(lat_pt)    ! for source pixel coordinates
+
+                        if (in_cell(xPixel, yPixel, zPixel, xCell(iPoint), yCell(iPoint), zCell(iPoint), &
+                                    nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
+                           do k=1,nz
+                              if (rarray(ii,jj,k) == msgval) then
+                                 rarray(ii,jj,k) = fillval
+                              end if
+                              albedo12m(k,iPoint) = albedo12m(k,iPoint) + rarray(ii,jj,k)
+                           end do
+                           nhs(iPoint) = nhs(iPoint) + 1
+                        end if
+                     end if
+                  end do
+                  end do
+
+               !MGB end if we need to loop through this lon
+               else
+                  call mpas_log_write('Skip longitude folder from $r to $r', intArgs=(/iTileStart/), realArgs=(/mintile_lon,maxtile_lon/))
+               end if
+
+           end do
+
+        !MGB end if we need to loop through this lat
+        else
+            call mpas_log_write('Skip latitude folder from $r to $r', intArgs=(/iTileStart/), realArgs=(/mintile_lat,maxtile_lat/))
+        end if
     end do
 
     do iCell = 1,nCells
