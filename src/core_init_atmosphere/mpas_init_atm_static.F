@@ -362,6 +362,15 @@
  end do
 
  do iCell = 1,nCells
+    !MGB Test that no cells are empty of terrain data
+    if (nhs(iCell) == 0) then
+        call mpas_log_write('--- Cell $i was not filled by any topo', intArgs=(/iCell/))
+        call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+        call mpas_log_write('Invalid topo in MPAS mesh: at least one cell has NaN terrain     ', messageType=MPAS_LOG_ERR)
+        call mpas_log_write('   This happens because the grid-spacing is finer than in the reference topo dataset.', messageType=MPAS_LOG_ERR)
+        call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+        !call mpas_log_write('Use finer reference topo or modify the code.', messageType=MPAS_LOG_CRIT)
+    end if
     ter(iCell) = ter(iCell) / real(nhs(iCell))
  end do
  deallocate(rarray)
@@ -396,6 +405,7 @@
  scalefactor = 1.0
  allocate(rarray(nx,ny,nz))
  allocate(ncat(ismax_lu,nCells))
+ nhs(:) = 0
  ncat(:,:) = 0
  lu_index(:) = 0.0
 
@@ -418,10 +428,10 @@
        iPoint = 1
        do j=1,ny
        do i=1,nx
-!
-! The MODIS dataset appears to have zeros at the South Pole, possibly other places, too
-!
-if (rarray(i,j,1) == 0) cycle
+       !
+       ! The MODIS dataset appears to have zeros at the South Pole, possibly other places, too
+       !
+       if (rarray(i,j,1) == 0) cycle
 
           lat_pt = -89.99583  + (jTileStart + j - 2) * 0.0083333333
           lon_pt = -179.99583 + (iTileStart + i - 2) * 0.0083333333
@@ -438,6 +448,7 @@ if (rarray(i,j,1) == 0) cycle
           !
           if (bdyMaskCell(iPoint) < nBdyLayers) then
              ncat(int(rarray(i,j,1)),iPoint) = ncat(int(rarray(i,j,1)),iPoint) + 1
+             nhs(iPoint) = nhs(iPoint) + 1
 
           ! For outermost boundary cells, additional work is needed to verify that the pixel
           ! actually lies within the nearest cell
@@ -450,6 +461,7 @@ if (rarray(i,j,1) == 0) cycle
                          nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
 
                 ncat(int(rarray(i,j,1)),iPoint) = ncat(int(rarray(i,j,1)),iPoint) + 1
+                nhs(iPoint) = nhs(iPoint) + 1
 
              end if
           end if
@@ -460,6 +472,16 @@ if (rarray(i,j,1) == 0) cycle
  end do
 
  do iCell = 1,nCells
+    !MGB Test that no cells are empty of land use data
+    if (nhs(iCell) == 0) then
+        call mpas_log_write('--- Cell $i was not filled by any land use', intArgs=(/iCell/))
+        call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+        call mpas_log_write('Invalid land use in MPAS mesh: at least one cell has NaN land use ', messageType=MPAS_LOG_ERR)
+        call mpas_log_write('   This happens because the grid-spacing is finer than in the reference land use dataset.', messageType=MPAS_LOG_ERR)
+        call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+        !call mpas_log_write('Use finer reference land use or modify the code.', messageType=MPAS_LOG_CRIT)
+    end if
+
     lu_index(iCell) = 1
     do i = 2,ismax_lu
        if(ncat(i,iCell) > ncat(lu_index(iCell),iCell)) then
@@ -486,6 +508,7 @@ if (rarray(i,j,1) == 0) cycle
  allocate(ncat(16,nCells))
  ncat(:,:) = 0
  soilcat_top(:) = 0.0
+ nhs(:) = 0
 
  rarray_ptr = c_loc(rarray)
 
@@ -521,6 +544,7 @@ if (rarray(i,j,1) == 0) cycle
           !
           if (bdyMaskCell(iPoint) < nBdyLayers) then
              ncat(int(rarray(i,j,1)),iPoint) = ncat(int(rarray(i,j,1)),iPoint) + 1
+             nhs(iPoint) = nhs(iPoint) + 1
 
           ! For outermost boundary cells, additional work is needed to verify that the pixel
           ! actually lies within the nearest cell
@@ -533,6 +557,7 @@ if (rarray(i,j,1) == 0) cycle
                          nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
 
                 ncat(int(rarray(i,j,1)),iPoint) = ncat(int(rarray(i,j,1)),iPoint) + 1
+                nhs(iPoint) = nhs(iPoint) + 1
 
              end if
           end if
@@ -543,6 +568,16 @@ if (rarray(i,j,1) == 0) cycle
  end do
 
  do iCell = 1,nCells
+    !MGB Test that no cells are empty of soil category data
+    if (nhs(iCell) == 0) then
+        call mpas_log_write('--- Cell $i was not filled by any soil cat', intArgs=(/iCell/))
+        call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+        call mpas_log_write('Invalid soil cat in MPAS mesh: at least one cell has NaN soil cat ', messageType=MPAS_LOG_ERR)
+        call mpas_log_write('   This happens because the grid-spacing is finer than in the reference soil cat dataset.', messageType=MPAS_LOG_ERR)
+        call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+        !call mpas_log_write('Use finer reference soil category or modify the code.', messageType=MPAS_LOG_CRIT)
+    end if
+
     soilcat_top(iCell) = 1
     do i = 2,16
        if(ncat(i,iCell) > ncat(soilcat_top(iCell),iCell)) then
@@ -762,7 +797,17 @@ if (rarray(i,j,1) == 0) cycle
        ! to be treated in this way tends to be a very small fraction of the total number of cells.
        !
        if (nhs(iCell) == 0) then
-          snoalb(iCell) = fillval
+          ! MGB remove this default albedo
+          !snoalb(iCell) = fillval
+
+          !MGB Test that no cells are empty of snow albedo data
+           call mpas_log_write('--- Cell $i was not filled by any snow albedo', intArgs=(/iCell/))
+           call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+           call mpas_log_write('Invalid snow albedo in MPAS mesh: at least one cell has NaN snow albedo', messageType=MPAS_LOG_ERR)
+           call mpas_log_write('   This happens because the grid-spacing is finer than in the reference snow albedo dataset.', messageType=MPAS_LOG_ERR)
+           call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+           !call mpas_log_write('Use finer reference snow albedo or modify the code.', messageType=MPAS_LOG_CRIT)
+
        else
           snoalb(iCell) = snoalb(iCell) / real(nhs(iCell))
        end if
@@ -920,7 +965,13 @@ if (rarray(i,j,1) == 0) cycle
              ! we can safely assume that the nearest model grid cell contains the pixel (else, a different
              ! cell would be nearest)
              !
-             if (landmask(iPoint) == 1 .and. bdyMaskCell(iPoint) < nBdyLayers) then
+             !MGB For landmask different than land (1) we put the fillval
+             if (landmask(iPoint) != 1) then
+                do k=1,nz
+                   greenfrac(k,iPoint) = greenfrac(k,iPoint) + fillval
+                end do
+                nhs(iPoint) = nhs(iPoint) + 1
+             else if (bdyMaskCell(iPoint) < nBdyLayers) then
                 do k=1,nz
                    if (rarray(i,j,k) == msgval) then
                       rarray(i,j,k) = fillval
@@ -931,7 +982,7 @@ if (rarray(i,j,1) == 0) cycle
 
              ! For outermost land cells, additional work is needed to verify that the pixel
              ! actually lies within the nearest cell
-             else if (landmask(iPoint) == 1) then
+             else then
                 zPixel = sphere_radius * sin(lat_pt)                  ! Model cell coordinates assume a "full" sphere radius
                 xPixel = sphere_radius * cos(lon_pt) * cos(lat_pt)    ! at this point, so we need to ues the same radius
                 yPixel = sphere_radius * sin(lon_pt) * cos(lat_pt)    ! for source pixel coordinates
@@ -954,13 +1005,20 @@ if (rarray(i,j,1) == 0) cycle
     end do
 
     do iCell = 1,nCells
-       ! For land points that have no overlap with valid data, and for water points,
-       ! just use the fill value...
-       if (nhs(iCell) == 0) then
-          greenfrac(:,iCell) = fillval
-       else
-          greenfrac(:,iCell) = greenfrac(:,iCell) / real(nhs(iCell))
+
+       !MGB For land points that have no overlap with valid data, we throw error
+       !MGB The water points have been taken into account before (fillval)
+       !MGB Test that no cells are empty of green fraction data
+        if (nhs(iCell) == 0) then
+            call mpas_log_write('--- Cell $i was not filled by any green fraction', intArgs=(/iCell/))
+            call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+            call mpas_log_write('Invalid green fractionin MPAS mesh: at least one cell has NaN green fraction ', messageType=MPAS_LOG_ERR)
+            call mpas_log_write('   This happens because the grid-spacing is finer than in the reference green fraction dataset.', messageType=MPAS_LOG_ERR)
+            call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+            !call mpas_log_write('Use finer reference green fraction or modify the code.', messageType=MPAS_LOG_CRIT)
        end if
+
+       greenfrac(:,iCell) = greenfrac(:,iCell) / real(nhs(iCell))
        shdmin(iCell) = minval(greenfrac(:,iCell))
        shdmax(iCell) = maxval(greenfrac(:,iCell))
     end do
@@ -1119,7 +1177,14 @@ if (rarray(i,j,1) == 0) cycle
              ! we can safely assume that the nearest model grid cell contains the pixel (else, a different
              ! cell would be nearest)
              !
-             if (landmask(iPoint) == 1 .and. bdyMaskCell(iPoint) < nBdyLayers) then
+             !MGB For landmask different than land (1) we put the fillval
+             if (landmask(iPoint) != 1) then
+                do k=1,nz
+                   albedo12m(k,iPoint) = albedo12m(k,iPoint) + fillval
+                end do
+                nhs(iPoint) = nhs(iPoint) + 1
+
+             else if (bdyMaskCell(iPoint) < nBdyLayers) then
                 do k=1,nz
                    if (rarray(ii,jj,k) == msgval) then
                       rarray(ii,jj,k) = fillval
@@ -1130,7 +1195,7 @@ if (rarray(i,j,1) == 0) cycle
 
              ! For outermost land cells, additional work is needed to verify that the pixel
              ! actually lies within the nearest cell
-             else if (landmask(iPoint) == 1) then
+             else then
                 zPixel = sphere_radius * sin(lat_pt)                  ! Model cell coordinates assume a "full" sphere radius
                 xPixel = sphere_radius * cos(lon_pt) * cos(lat_pt)    ! at this point, so we need to ues the same radius
                 yPixel = sphere_radius * sin(lon_pt) * cos(lat_pt)    ! for source pixel coordinates
@@ -1156,7 +1221,17 @@ if (rarray(i,j,1) == 0) cycle
        ! For land points that have no overlap with valid data, and for water points,
        ! just use the fill value...
        if (nhs(iCell) == 0) then
-          albedo12m(:,iCell) = fillval
+          ! MGB remove this default albedo
+          !albedo12m(:,iCell) = fillval
+
+          !MGB Test that no cells are empty of 12 months snow albedo data
+           call mpas_log_write('--- Cell $i was not filled by any 12m albedo', intArgs=(/iCell/))
+           call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+           call mpas_log_write('Invalid 12m albedo in MPAS mesh: at least one cell has NaN 12m albedo', messageType=MPAS_LOG_ERR)
+           call mpas_log_write('   This happens because the grid-spacing is finer than in the reference 12m albedo dataset.', messageType=MPAS_LOG_ERR)
+           call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+           !call mpas_log_write('Use finer reference 12m albedo or modify the code.', messageType=MPAS_LOG_CRIT)
+
        else
           albedo12m(:,iCell) = albedo12m(:,iCell) / real(nhs(iCell))
        end if
