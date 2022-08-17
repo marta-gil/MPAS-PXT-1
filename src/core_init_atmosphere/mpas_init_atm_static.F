@@ -277,6 +277,12 @@ grid_maxlat = maxval(latVertex(:)) * 180.0 / PI
 grid_minlon = minval(lonVertex(:)) * 180.0 / PI
 grid_maxlon = maxval(lonVertex(:)) * 180.0 / PI
 call mpas_log_write('Found latlon limits of the grid')
+call mpas_log_write('')
+call mpas_log_write('--- grid_minlat = $r', realArgs=(/grid_minlat/))
+call mpas_log_write('--- grid_maxlat = $r', realArgs=(/grid_maxlat/))
+call mpas_log_write('--- grid_minlon = $r', realArgs=(/grid_minlon/))
+call mpas_log_write('--- grid_maxlon = $r', realArgs=(/grid_maxlon/))
+call mpas_log_write('')
 
 !
 ! Interpolate HGT
@@ -322,6 +328,9 @@ call mpas_log_write('Found latlon limits of the grid')
     !MGB Do we need to check this latitude?
     mintile_lat = start_lat + (jTileStart + (4) - 5) * 0.0083333333
     maxtile_lat = start_lat + (jTileStart + (ny-3) - 5) * 0.0083333333
+    call mpas_log_write('* Latitude Loop: $r', intArgs=(/jTileStart/))
+    call mpas_log_write('From $r', realArgs=(/mintile_lat/))
+    call mpas_log_write('  to mintile_lat= $r', realArgs=(/maxtile_lat/))
     if (grid_minlat > mintile_lat .and. grid_maxlat < maxtile_lat) then
 
         do iTileStart=1,42001,nx-6
@@ -330,6 +339,9 @@ call mpas_log_write('Found latlon limits of the grid')
            !MGB Do we need to check this longitude?
            mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
            maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
+           call mpas_log_write('* Longitude Loop: $r', intArgs=(/iTileStart/))
+           call mpas_log_write('From $r', realArgs=(/mintile_lon/))
+           call mpas_log_write('  to mintile_lat= $r', realArgs=(/maxtile_lon/))
            if (grid_minlon > mintile_lon .and. grid_maxlon < maxtile_lon) then
 
                write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
