@@ -966,7 +966,7 @@
              ! cell would be nearest)
              !
              !MGB For landmask different than land (1) we put the fillval
-             if (landmask(iPoint) != 1) then
+             if (landmask(iPoint) /= 1) then
                 do k=1,nz
                    greenfrac(k,iPoint) = greenfrac(k,iPoint) + fillval
                 end do
@@ -982,7 +982,7 @@
 
              ! For outermost land cells, additional work is needed to verify that the pixel
              ! actually lies within the nearest cell
-             else then
+             else
                 zPixel = sphere_radius * sin(lat_pt)                  ! Model cell coordinates assume a "full" sphere radius
                 xPixel = sphere_radius * cos(lon_pt) * cos(lat_pt)    ! at this point, so we need to ues the same radius
                 yPixel = sphere_radius * sin(lon_pt) * cos(lat_pt)    ! for source pixel coordinates
@@ -1178,7 +1178,7 @@
              ! cell would be nearest)
              !
              !MGB For landmask different than land (1) we put the fillval
-             if (landmask(iPoint) != 1) then
+             if (landmask(iPoint) /= 1) then
                 do k=1,nz
                    albedo12m(k,iPoint) = albedo12m(k,iPoint) + fillval
                 end do
@@ -1195,7 +1195,7 @@
 
              ! For outermost land cells, additional work is needed to verify that the pixel
              ! actually lies within the nearest cell
-             else then
+             else
                 zPixel = sphere_radius * sin(lat_pt)                  ! Model cell coordinates assume a "full" sphere radius
                 xPixel = sphere_radius * cos(lon_pt) * cos(lat_pt)    ! at this point, so we need to ues the same radius
                 yPixel = sphere_radius * sin(lon_pt) * cos(lat_pt)    ! for source pixel coordinates
