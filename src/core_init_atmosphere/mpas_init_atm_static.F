@@ -96,7 +96,7 @@
  integer, pointer :: supersample_fac
 
  !MGB for loop optimization
- real(kind=RKIND):: grid_minlat,grid_maxlat,grid_minlon,grid_maxlon
+ real(kind=RKIND):: grid_minlat,grid_maxlat,grid_minlon,grid_maxlon, newlon
  real(kind=RKIND):: mintile_lat,maxtile_lat,mintile_lon,maxtile_lon
  real(kind=RKIND):: lat,lon,x,y,z
  real(kind=RKIND):: lat_pt,lon_pt
@@ -280,6 +280,22 @@ grid_minlat = minval(latVertex(:)) * 180.0 / PI
 grid_maxlat = maxval(latVertex(:)) * 180.0 / PI
 grid_minlon = minval(lonVertex(:)) * 180.0 / PI
 grid_maxlon = maxval(lonVertex(:)) * 180.0 / PI
+
+if ( (grid_maxlon - grid_minlon) > 355. ) then
+    call mpas_log_write('The MPAS grid crosses the zero meridian')
+    grid_minlon = 360.
+    grid_maxlon = 0.
+    do i=1,size(lonVertex)
+        newlon = mod(lonVertex(i) + 180., 360.) - 180.
+        if ( newlon > grid_maxlon ) then
+            grid_maxlon = newlon
+        end if
+        if ( newlon < grid_minlon ) then
+            grid_minlon = newlon
+        end if
+    end do
+end if
+
 call mpas_log_write('Found latlon limits of the grid')
 call mpas_log_write('')
 call mpas_log_write('--- grid_minlat = $r', realArgs=(/grid_minlat/))
@@ -350,11 +366,11 @@ call mpas_log_write('')
            !MGB Do we need to check this longitude?
            mintile_lon = start_lon + (iTileStart + (4) - 5) * geowidth
            maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * geowidth
+           if (grid_minlon < 0. .and. mintile_lon > 179) then
+                mintile_lon = mintile_lon-360
+                maxtile_lon = maxtile_lon-360
+           end if
            if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
-               ! Note that for any MPAS mesh that crosses the meridian zero
-               ! we will open all longitude boxes with this algorithm
-               ! since grid_minlon will be approx 0 and grid_maxlon 360.
-
                write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
                             iTileStart,'-',iTileEnd,'.',jTileStart,'-',jTileEnd
                call mpas_log_write(trim(fname))
@@ -375,8 +391,8 @@ call mpas_log_write('')
                   do iin=0,subsamples-1
                   do jin=0,subsamples-1
 
-                      lat_ptin = (lat_pt - subwidth/2) + jin*subwidth
-                      lon_ptin = (lon_pt - subwidth/2) + iin*subwidth
+                      lat_ptin = lat_pt - (subsamples/2 - 1/2 + jin)*subwidth
+                      lon_ptin = lon_pt - (subsamples/2 - 1/2 + iin)*subwidth
 
                       iPoint = nearest_cell(lat_ptin,lon_ptin,iPoint,nCells,maxEdges, &
                                             nEdgesOnCell,cellsOnCell, &
@@ -394,8 +410,8 @@ call mpas_log_write('')
                       ! actually lies within the nearest cell
                       else
                          zPixel = sphere_radius * sin(lat_ptin)                  ! Model cell coordinates assume a "full" sphere radius
-                         xPixel = sphere_radius * cos(lon_ptin) * cos(lat_ptin)    ! at this point, so we need to ues the same radius
-                         yPixel = sphere_radius * sin(lon_ptin) * cos(lat_ptin)    ! for source pixel coordinates
+                         xPixel = sphere_radius * cos(lon_ptin) * cos(lat_ptin)  ! at this point, so we need to ues the same radius
+                         yPixel = sphere_radius * sin(lon_ptin) * cos(lat_ptin)  ! for source pixel coordinates
 
                          if (in_cell(xPixel, yPixel, zPixel, xCell(iPoint), yCell(iPoint), zCell(iPoint), &
                                      nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
