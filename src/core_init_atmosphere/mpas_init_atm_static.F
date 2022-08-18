@@ -294,7 +294,7 @@ if ( (grid_maxlon - grid_minlon) > 355. ) then
     grid_minlon = 360.
     grid_maxlon = 0.
     do i=1,size(lonVertex)
-        newlon = mod(lonVertex(i) + 180., 360.) - 180.
+        newlon = mod(lonVertex(i) * 180.0 / PI + 180., 360.) - 180.
         if ( newlon > grid_maxlon ) then
             grid_maxlon = newlon
         end if
