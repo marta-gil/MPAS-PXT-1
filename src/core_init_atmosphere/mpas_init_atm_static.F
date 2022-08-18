@@ -596,7 +596,7 @@ call mpas_log_write('')
 
                       !call mpas_log_write('    Subcell ($i, $i): $r $r', intArgs=(/jin, iin/), realArgs=(/lat_ptin,lon_ptin/))
 
-                      iPoint = nearest_cell(lat_pt,lon_pt,iPoint,nCells,maxEdges, &
+                      iPoint = nearest_cell(lat_ptin,lon_ptin,iPoint,nCells,maxEdges, &
                                             nEdgesOnCell,cellsOnCell, &
                                             latCell,lonCell)
 
@@ -611,9 +611,9 @@ call mpas_log_write('')
                       ! For outermost boundary cells, additional work is needed to verify that the pixel
                       ! actually lies within the nearest cell
                       else
-                         zPixel = sphere_radius * sin(lat_pt)                  ! Model cell coordinates assume a "full" sphere radius
-                         xPixel = sphere_radius * cos(lon_pt) * cos(lat_pt)    ! at this point, so we need to ues the same radius
-                         yPixel = sphere_radius * sin(lon_pt) * cos(lat_pt)    ! for source pixel coordinates
+                         zPixel = sphere_radius * sin(lat_ptin)                  ! Model cell coordinates assume a "full" sphere radius
+                         xPixel = sphere_radius * cos(lon_ptin) * cos(lat_ptin)    ! at this point, so we need to ues the same radius
+                         yPixel = sphere_radius * sin(lon_ptin) * cos(lat_ptin)    ! for source pixel coordinates
 
                          if (in_cell(xPixel, yPixel, zPixel, xCell(iPoint), yCell(iPoint), zCell(iPoint), &
                                      nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
@@ -723,33 +723,45 @@ call mpas_log_write('')
                   lat_pt = lat_pt * PI / 180.0
                   lon_pt = lon_pt * PI / 180.0
 
-                  iPoint = nearest_cell(lat_pt,lon_pt,iPoint,nCells,maxEdges, &
-                                        nEdgesOnCell,cellsOnCell, &
-                                        latCell,lonCell)
 
-                  !
-                  ! For all but the outermost boundary cells, we can safely assume that the nearest
-                  ! model grid cell contains the pixel (else, a different cell would be nearest)
-                  !
-                  if (bdyMaskCell(iPoint) < nBdyLayers) then
-                     ncat(int(rarray(i,j,1)),iPoint) = ncat(int(rarray(i,j,1)),iPoint) + 1
-                     nhs(iPoint) = nhs(iPoint) + 1
 
-                  ! For outermost boundary cells, additional work is needed to verify that the pixel
-                  ! actually lies within the nearest cell
-                  else
-                     zPixel = sphere_radius * sin(lat_pt)                  ! Model cell coordinates assume a "full" sphere radius
-                     xPixel = sphere_radius * cos(lon_pt) * cos(lat_pt)    ! at this point, so we need to ues the same radius
-                     yPixel = sphere_radius * sin(lon_pt) * cos(lat_pt)    ! for source pixel coordinates
+                  !MGB subloop to increase resolution possibilities
+                  !call mpas_log_write(' POINT $r $r', realArgs=(/lat_pt,lon_pt/))
+                  do iin=0,subsamples-1
+                  do jin=0,subsamples-1
 
-                     if (in_cell(xPixel, yPixel, zPixel, xCell(iPoint), yCell(iPoint), zCell(iPoint), &
-                                 nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
+                      lat_ptin = lat_pt + (-subsamples/2. + 0.5 + jin)*subwidth
+                      lon_ptin = lon_pt + (-subsamples/2. + 0.5 + iin)*subwidth
 
-                        ncat(int(rarray(i,j,1)),iPoint) = ncat(int(rarray(i,j,1)),iPoint) + 1
-                        nhs(iPoint) = nhs(iPoint) + 1
+                      !call mpas_log_write('    Subcell ($i, $i): $r $r', intArgs=(/jin, iin/), realArgs=(/lat_ptin,lon_ptin/))
+                      iPoint = nearest_cell(lat_ptin,lon_ptin,iPoint,nCells,maxEdges, &
+                                            nEdgesOnCell,cellsOnCell, &
+                                            latCell,lonCell)
+                      !
+                      ! For all but the outermost boundary cells, we can safely assume that the nearest
+                      ! model grid cell contains the pixel (else, a different cell would be nearest)
+                      !
+                      if (bdyMaskCell(iPoint) < nBdyLayers) then
+                         ncat(int(rarray(i,j,1)),iPoint) = ncat(int(rarray(i,j,1)),iPoint) + 1
+                         nhs(iPoint) = nhs(iPoint) + 1
 
-                     end if
-                  end if
+                      ! For outermost boundary cells, additional work is needed to verify that the pixel
+                      ! actually lies within the nearest cell
+                      else
+                         zPixel = sphere_radius * sin(lat_ptin)                  ! Model cell coordinates assume a "full" sphere radius
+                         xPixel = sphere_radius * cos(lon_ptin) * cos(lat_ptin)    ! at this point, so we need to ues the same radius
+                         yPixel = sphere_radius * sin(lon_ptin) * cos(lat_ptin)    ! for source pixel coordinates
+
+                         if (in_cell(xPixel, yPixel, zPixel, xCell(iPoint), yCell(iPoint), zCell(iPoint), &
+                                     nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
+
+                            ncat(int(rarray(i,j,1)),iPoint) = ncat(int(rarray(i,j,1)),iPoint) + 1
+                            nhs(iPoint) = nhs(iPoint) + 1
+
+                         end if
+                      end if
+                  end do
+                  end do
                end do
                end do
 
@@ -937,6 +949,7 @@ call mpas_log_write('')
         !MGB Do we need to check this latitude?
         mintile_lat = (supersample_fac*(jTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * 0.05 / supersample_fac
         maxtile_lat = (supersample_fac*(jTileStart-1) + (supersample_fac * (ny-3)) - (supersample_fac*3+1)) * 0.05 / supersample_fac
+        call mpas_log_write('    LAT Folder ($i, $i): $r $r', intArgs=(/jTileStart, jTileEnd/), realArgs=(/mintile_lat,maxtile_lat/))
         if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
 
            do iTileStart=1,06001,nx-6
@@ -951,7 +964,7 @@ call mpas_log_write('')
                if (grid_maxlon >= 180) then
                     grid_maxlon = grid_maxlon-360
                end if
-
+               call mpas_log_write('    LAT Folder ($i, $i): $r $r', intArgs=(/iTileStart, iTileEnd/), realArgs=(/mintile_lon,maxtile_lon/))
                if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
 
                   write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
