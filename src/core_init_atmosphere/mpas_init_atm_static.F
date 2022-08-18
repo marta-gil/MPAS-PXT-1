@@ -283,10 +283,10 @@ grid_maxlon = maxval(lonVertex(:)) * 180.0 / PI
 
 call mpas_log_write('Found latlon limits of the grid')
 call mpas_log_write('')
-call mpas_log_write('--- grid_minlat = $r', realArgs=(/minval(latVertex(:))/))
-call mpas_log_write('--- grid_maxlat = $r', realArgs=(/maxval(latVertex(:))/))
-call mpas_log_write('--- grid_minlon = $r', realArgs=(/minval(lonVertex(:))/))
-call mpas_log_write('--- grid_maxlon = $r', realArgs=(/maxval(lonVertex(:))/))
+call mpas_log_write('--- grid_minlat = $r', realArgs=(/grid_minlat/))
+call mpas_log_write('--- grid_maxlat = $r', realArgs=(/grid_maxlat/))
+call mpas_log_write('--- grid_minlon = $r', realArgs=(/grid_minlon/))
+call mpas_log_write('--- grid_maxlon = $r', realArgs=(/grid_maxlon/))
 call mpas_log_write('')
 
 if ( (grid_maxlon - grid_minlon) > 355. ) then
