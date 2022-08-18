@@ -96,7 +96,7 @@
  integer, pointer :: supersample_fac
 
  !MGB for loop optimization
- real(kind=RKIND):: grid_minlat,grid_maxlat,grid_minlon,grid_maxlon, newlon
+ real(kind=RKIND):: grid_minlat,grid_maxlat,grid_minlon,grid_maxlon, newlon, newlat
  real(kind=RKIND):: mintile_lat,maxtile_lat,mintile_lon,maxtile_lon
  real(kind=RKIND):: lat,lon,x,y,z
  real(kind=RKIND):: lat_pt,lon_pt
@@ -278,10 +278,39 @@
 ! Min and max latitudes of the grid
 call mpas_log_write('Find latlon limits of the grid')
 call mpas_log_write('')
-grid_minlat = minval(latCell(:)) * 180.0 / PI
-grid_maxlat = maxval(latCell(:)) * 180.0 / PI
-grid_minlon = minval(lonCell(:)) * 180.0 / PI
-grid_maxlon = maxval(lonCell(:)) * 180.0 / PI
+
+grid_minlat = minval(latVertex(:)) * 180.0 / PI
+grid_maxlat = maxval(latVertex(:)) * 180.0 / PI
+grid_minlon = minval(lonVertex(:)) * 180.0 / PI
+grid_maxlon = maxval(lonVertex(:)) * 180.0 / PI
+
+! lonVertex and latVertex can sometimes have 0.000 values
+! that are not correct (are not there in grid.nc!)
+! These makes our minimum values compute erroneous values!
+if ( grid_minlat < 0.001 ) then
+    call mpas_log_write('Recompute minimum lat ignoring super small values')
+    grid_minlat = 360.
+    do i=1,size(latVertex)
+        if (latVertex(i) > 0.001) then
+            newlat = latVertex(i) * 180.0 / PI
+            if ( newlat < grid_minlat ) then
+                grid_minlat = newlat
+            end if
+        end if
+    end do
+end if
+if ( grid_minlon < 0.001 ) then
+    call mpas_log_write('Recompute minimum lon ignoring super small values')
+    grid_minlon = 360.
+    do i=1,size(lonVertex)
+        if (lonVertex(i) > 0.001) then
+            newlon = lonVertex(i) * 180.0 / PI
+            if ( newlon < grid_minlon ) then
+                grid_minlon = newlon
+            end if
+        end if
+    end do
+end if
 
 call mpas_log_write('--- grid_minlat = $r', realArgs=(/grid_minlat/))
 call mpas_log_write('--- grid_maxlat = $r', realArgs=(/grid_maxlat/))
@@ -292,17 +321,17 @@ if ( (grid_maxlon - grid_minlon) > 300. ) then
     call mpas_log_write('The MPAS grid crosses the zero meridian')
     grid_minlon = 360.
     grid_maxlon = 0.
-    do i=1,size(lonCell)
-        if (lonCell(i) < 0.01) then
-            call mpas_log_write('**Problem in cell $i ??', intArgs=(/i/))
-            call mpas_log_write('!! Found a too? small lon $r ', realArgs=(/lonCell(i)/))
-        end if
-        newlon = mod(lonCell(i) * 180.0 / PI + 180., 360.) - 180.
-        if ( newlon > grid_maxlon ) then
-            grid_maxlon = newlon
-        end if
-        if ( newlon < grid_minlon ) then
-            grid_minlon = newlon
+    do i=1,size(lonVertex)
+        ! lonVertex and latVertex can sometimes have 0.000 values
+        ! that are not correct (are not there in grid.nc!)
+        if (lonVertex(i) > 0.001) then
+            newlon = mod(lonVertex(i) * 180.0 / PI + 180., 360.) - 180.
+            if ( newlon > grid_maxlon ) then
+                grid_maxlon = newlon
+            end if
+            if ( newlon < grid_minlon ) then
+                grid_minlon = newlon
+            end if
         end if
     end do
 end if
