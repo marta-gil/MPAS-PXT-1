@@ -104,6 +104,10 @@
  real(kind=RKIND),dimension(:,:),allocatable  :: maxsnowalb
  real(kind=RKIND),dimension(:,:,:),allocatable:: vegfra
 
+ !MGB for new loops to increase resolution
+ integer:: iin,jin,subsamples
+ real(kind=RKIND):: geowidth, subwidth, lat_ptin, lon_ptin
+
  integer, pointer :: isice_lu, iswater_lu
  integer, pointer :: nCells, nEdges, nVertices, maxEdges
  logical, pointer :: on_a_sphere
@@ -304,6 +308,10 @@ call mpas_log_write('')
  rarray_ptr = c_loc(rarray)
 
  start_lat = -89.99583
+
+ !MGB Width of the 30s cells in degrees
+ geowidth = 0.0083333333
+
  select case(trim(config_topo_data))
     case('GTOPO30')
        call mpas_log_write('Using GTOPO30 terrain dataset')
@@ -322,21 +330,30 @@ call mpas_log_write('')
        call mpas_log_write('Please correct the namelist.', messageType=MPAS_LOG_CRIT)
  end select
 
+ !MGB Fake subloops for every geogrid cell
+ subsamples = 2
+
+ subwidth = geowidth / subsamples
+
+
  do jTileStart = 1,20401,ny-6
     jTileEnd = jTileStart + ny - 1 - 6
 
     !MGB Do we need to check this latitude?
-    mintile_lat = start_lat + (jTileStart + (4) - 5) * 0.0083333333
-    maxtile_lat = start_lat + (jTileStart + (ny-3) - 5) * 0.0083333333
+    mintile_lat = start_lat + (jTileStart + (4) - 5) * geowidth
+    maxtile_lat = start_lat + (jTileStart + (ny-3) - 5) * geowidth
     if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
 
         do iTileStart=1,42001,nx-6
            iTileEnd = iTileStart + nx - 1 - 6
 
            !MGB Do we need to check this longitude?
-           mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
-           maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
+           mintile_lon = start_lon + (iTileStart + (4) - 5) * geowidth
+           maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * geowidth
            if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
+               ! Note that for any MPAS mesh that crosses the meridian zero
+               ! we will open all longitude boxes with this algorithm
+               ! since grid_minlon will be approx 0 and grid_maxlon 360.
 
                write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
                             iTileStart,'-',iTileEnd,'.',jTileStart,'-',jTileEnd
@@ -350,38 +367,46 @@ call mpas_log_write('')
                iPoint = 1
                do j=4,ny-3
                do i=4,nx-3
-                  lat_pt = start_lat + (jTileStart + j - 5) * 0.0083333333
-                  lon_pt = start_lon + (iTileStart + i - 5) * 0.0083333333
+                  lat_pt = start_lat + (jTileStart + j - 5) * geowidth
+                  lon_pt = start_lon + (iTileStart + i - 5) * geowidth
                   lat_pt = lat_pt * PI / 180.0
                   lon_pt = lon_pt * PI / 180.0
 
-                  iPoint = nearest_cell(lat_pt,lon_pt,iPoint,nCells,maxEdges, &
-                                        nEdgesOnCell,cellsOnCell, &
-                                        latCell,lonCell)
+                  do iin=0,subsamples-1
+                  do jin=0,subsamples-1
 
-                  !
-                  ! For all but the outermost boundary cells, we can safely assume that the nearest
-                  ! model grid cell contains the pixel (else, a different cell would be nearest)
-                  !
-                  if (bdyMaskCell(iPoint) < nBdyLayers) then
-                     ter(iPoint) = ter(iPoint) + rarray(i,j,1)
-                     nhs(iPoint) = nhs(iPoint) + 1
+                      lat_ptin = (lat_pt - subwidth/2) + jin*subwidth
+                      lon_ptin = (lon_pt - subwidth/2) + iin*subwidth
 
-                  ! For outermost boundary cells, additional work is needed to verify that the pixel
-                  ! actually lies within the nearest cell
-                  else
-                     zPixel = sphere_radius * sin(lat_pt)                  ! Model cell coordinates assume a "full" sphere radius
-                     xPixel = sphere_radius * cos(lon_pt) * cos(lat_pt)    ! at this point, so we need to ues the same radius
-                     yPixel = sphere_radius * sin(lon_pt) * cos(lat_pt)    ! for source pixel coordinates
+                      iPoint = nearest_cell(lat_ptin,lon_ptin,iPoint,nCells,maxEdges, &
+                                            nEdgesOnCell,cellsOnCell, &
+                                            latCell,lonCell)
 
-                     if (in_cell(xPixel, yPixel, zPixel, xCell(iPoint), yCell(iPoint), zCell(iPoint), &
-                                 nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
+                      !
+                      ! For all but the outermost boundary cells, we can safely assume that the nearest
+                      ! model grid cell contains the pixel (else, a different cell would be nearest)
+                      !
+                      if (bdyMaskCell(iPoint) < nBdyLayers) then
+                         ter(iPoint) = ter(iPoint) + rarray(i,j,1)
+                         nhs(iPoint) = nhs(iPoint) + 1
 
-                        ter(iPoint) = ter(iPoint) + rarray(i,j,1)
-                        nhs(iPoint) = nhs(iPoint) + 1
+                      ! For outermost boundary cells, additional work is needed to verify that the pixel
+                      ! actually lies within the nearest cell
+                      else
+                         zPixel = sphere_radius * sin(lat_ptin)                  ! Model cell coordinates assume a "full" sphere radius
+                         xPixel = sphere_radius * cos(lon_ptin) * cos(lat_ptin)    ! at this point, so we need to ues the same radius
+                         yPixel = sphere_radius * sin(lon_ptin) * cos(lat_ptin)    ! for source pixel coordinates
 
-                     end if
-                  end if
+                         if (in_cell(xPixel, yPixel, zPixel, xCell(iPoint), yCell(iPoint), zCell(iPoint), &
+                                     nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
+
+                            ter(iPoint) = ter(iPoint) + rarray(i,j,1)
+                            nhs(iPoint) = nhs(iPoint) + 1
+
+                         end if
+                      end if
+                  end do
+                  end do
                end do
                end do
 
@@ -464,6 +489,9 @@ call mpas_log_write('')
            mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
            maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
            if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
+               ! Note that for any MPAS mesh that crosses the meridian zero
+               ! we will open all longitude boxes with this algorithm
+               ! since grid_minlon will be approx 0 and grid_maxlon 360.
 
                write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)// &
                      trim(geog_sub_path),iTileStart,'-',iTileEnd,'.',jTileStart,'-',jTileEnd
