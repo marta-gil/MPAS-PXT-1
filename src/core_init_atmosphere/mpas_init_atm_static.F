@@ -422,7 +422,7 @@ call mpas_log_write('')
                   lat_pt = lat_pt * PI / 180.0
                   lon_pt = lon_pt * PI / 180.0
 
-                  call mpas_log_write(' POINT $r $r', realArgs=(/lat_pt,lon_pt/))
+                  !call mpas_log_write(' POINT $r $r', realArgs=(/lat_pt,lon_pt/))
 
                   do iin=0,subsamples-1
                   do jin=0,subsamples-1
