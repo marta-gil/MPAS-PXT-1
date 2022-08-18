@@ -281,6 +281,14 @@ grid_maxlat = maxval(latVertex(:)) * 180.0 / PI
 grid_minlon = minval(lonVertex(:)) * 180.0 / PI
 grid_maxlon = maxval(lonVertex(:)) * 180.0 / PI
 
+call mpas_log_write('Found latlon limits of the grid')
+call mpas_log_write('')
+call mpas_log_write('--- grid_minlat = $r', realArgs=(/minval(latVertex(:))/))
+call mpas_log_write('--- grid_maxlat = $r', realArgs=(/maxval(latVertex(:))/))
+call mpas_log_write('--- grid_minlon = $r', realArgs=(/minval(lonVertex(:))/))
+call mpas_log_write('--- grid_maxlon = $r', realArgs=(/maxval(lonVertex(:))/))
+call mpas_log_write('')
+
 if ( (grid_maxlon - grid_minlon) > 355. ) then
     call mpas_log_write('The MPAS grid crosses the zero meridian')
     grid_minlon = 360.
