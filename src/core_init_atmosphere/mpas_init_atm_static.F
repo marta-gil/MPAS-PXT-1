@@ -276,10 +276,10 @@
 
 !MGB
 ! Min and max latitudes of the grid
-grid_minlat = minval(latVertex(:)) * 180.0 / PI
-grid_maxlat = maxval(latVertex(:)) * 180.0 / PI
-grid_minlon = minval(lonVertex(:)) * 180.0 / PI
-grid_maxlon = maxval(lonVertex(:)) * 180.0 / PI
+grid_minlat = minval(latCell(:)) * 180.0 / PI
+grid_maxlat = maxval(latCell(:)) * 180.0 / PI
+grid_minlon = minval(lonCell(:)) * 180.0 / PI
+grid_maxlon = maxval(lonCell(:)) * 180.0 / PI
 
 call mpas_log_write('Found latlon limits of the grid')
 call mpas_log_write('')
@@ -293,8 +293,8 @@ if ( (grid_maxlon - grid_minlon) > 355. ) then
     call mpas_log_write('The MPAS grid crosses the zero meridian')
     grid_minlon = 360.
     grid_maxlon = 0.
-    do i=1,size(lonVertex)
-        newlon = mod(lonVertex(i) * 180.0 / PI + 180., 360.) - 180.
+    do i=1,size(lonCell)
+        newlon = mod(lonCell(i) * 180.0 / PI + 180., 360.) - 180.
         if ( newlon > grid_maxlon ) then
             grid_maxlon = newlon
         end if
