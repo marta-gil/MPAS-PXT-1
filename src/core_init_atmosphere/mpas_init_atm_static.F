@@ -427,8 +427,8 @@ call mpas_log_write('')
                   do iin=0,subsamples-1
                   do jin=0,subsamples-1
 
-                      lat_ptin = lat_pt + (-subsamples/2 + 1/2 + jin)*subwidth
-                      lon_ptin = lon_pt + (-subsamples/2 + 1/2 + iin)*subwidth
+                      lat_ptin = lat_pt + (-subsamples/2. + 1/2 + jin)*subwidth
+                      lon_ptin = lon_pt + (-subsamples/2. + 1/2 + iin)*subwidth
 
                       call mpas_log_write('    Subcell ($i, $i): $r $r', intArgs=(/jin, iin/), realArgs=(/lat_ptin,lon_ptin/))
                       iPoint = nearest_cell(lat_ptin,lon_ptin,iPoint,nCells,maxEdges, &
