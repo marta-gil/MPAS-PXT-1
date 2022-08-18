@@ -382,8 +382,8 @@ call mpas_log_write('')
  end select
 
  !MGB Fake subloops for every geogrid cell
- subsamples = 2
- subwidth = geowidth / subsamples
+ subsamples = 2.
+ subwidth = (geowidth * PI / 180.0) / subsamples
 
 
  do jTileStart = 1,20401,ny-6
@@ -430,7 +430,7 @@ call mpas_log_write('')
                       lat_ptin = lat_pt + (-subsamples/2 + 1/2 + jin)*subwidth
                       lon_ptin = lon_pt + (-subsamples/2 + 1/2 + iin)*subwidth
 
-                      call mpas_log_write('    Subcell $r $r', realArgs=(/lat_ptin,lon_ptin/))
+                      call mpas_log_write('    Subcell ($i, $i): $r $r', intArgs=(/jin, iin/), realArgs=(/lat_ptin,lon_ptin/))
                       iPoint = nearest_cell(lat_ptin,lon_ptin,iPoint,nCells,maxEdges, &
                                             nEdgesOnCell,cellsOnCell, &
                                             latCell,lonCell)
