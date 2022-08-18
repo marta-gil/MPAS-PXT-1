@@ -383,7 +383,6 @@ call mpas_log_write('')
 
  !MGB Fake subloops for every geogrid cell
  subsamples = 2
-
  subwidth = geowidth / subsamples
 
 
@@ -542,6 +541,10 @@ call mpas_log_write('')
            !MGB Do we need to check this longitude?
            mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
            maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
+           if (grid_minlon < 0. .and. mintile_lon > 179) then
+                mintile_lon = mintile_lon-360
+                maxtile_lon = maxtile_lon-360
+           end if
            if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
                ! Note that for any MPAS mesh that crosses the meridian zero
                ! we will open all longitude boxes with this algorithm
@@ -669,6 +672,10 @@ call mpas_log_write('')
            !MGB Do we need to check this longitude?
            mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
            maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
+           if (grid_minlon < 0. .and. mintile_lon > 179) then
+                mintile_lon = mintile_lon-360
+                maxtile_lon = maxtile_lon-360
+           end if
            if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
 
                write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)// &
@@ -910,6 +917,10 @@ call mpas_log_write('')
               !MGB Do we need to check this longitude?
                mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
                maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
+               if (grid_minlon < 0. .and. mintile_lon > 179) then
+                   mintile_lon = mintile_lon-360
+                   maxtile_lon = maxtile_lon-360
+               end if
                if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
 
                   write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
@@ -1135,6 +1146,10 @@ call mpas_log_write('')
               !MGB Do we need to check this longitude?
               mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
               maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
+              if (grid_minlon < 0. .and. mintile_lon > 179) then
+                mintile_lon = mintile_lon-360
+                maxtile_lon = maxtile_lon-360
+              end if
               if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
 
                   write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
@@ -1366,6 +1381,10 @@ call mpas_log_write('')
               !MGB Do we need to check this longitude?
                mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
                maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
+               if (grid_minlon < 0. .and. mintile_lon > 179) then
+                    mintile_lon = mintile_lon-360
+                    maxtile_lon = maxtile_lon-360
+               end if
                if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
 
                   write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
