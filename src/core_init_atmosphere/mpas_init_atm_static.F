@@ -312,9 +312,6 @@ if ( grid_minlon < 0.001 ) then
     end do
 end if
 
-call mpas_log_write('--- grid_minlat = $r', realArgs=(/grid_minlat/))
-call mpas_log_write('--- grid_maxlat = $r', realArgs=(/grid_maxlat/))
-
 ! possibly correct longitudes to negative values
 ! if we believe the mesh may be crossing the zero meridian
 if ( (grid_maxlon - grid_minlon) > 300. ) then
@@ -336,8 +333,8 @@ if ( (grid_maxlon - grid_minlon) > 300. ) then
     end do
 end if
 
-
-
+call mpas_log_write('--- grid_minlat = $r', realArgs=(/grid_minlat/))
+call mpas_log_write('--- grid_maxlat = $r', realArgs=(/grid_maxlat/))
 call mpas_log_write('--- grid_minlon = $r', realArgs=(/grid_minlon/))
 call mpas_log_write('--- grid_maxlon = $r', realArgs=(/grid_maxlon/))
 call mpas_log_write('')
@@ -426,12 +423,15 @@ call mpas_log_write('')
                   lat_pt = lat_pt * PI / 180.0
                   lon_pt = lon_pt * PI / 180.0
 
+                  call mpas_log_write(' POINT $r $r', realArgs=(/lat_pt,lon_pt/))
+
                   do iin=0,subsamples-1
                   do jin=0,subsamples-1
 
-                      lat_ptin = lat_pt - (subsamples/2 - 1/2 + jin)*subwidth
-                      lon_ptin = lon_pt - (subsamples/2 - 1/2 + iin)*subwidth
+                      lat_ptin = lat_pt + (-subsamples/2 + 1/2 + jin)*subwidth
+                      lon_ptin = lon_pt + (-subsamples/2 + 1/2 + iin)*subwidth
 
+                      call mpas_log_write('    Subcell $r $r', realArgs=(/lat_ptin,lon_ptin/))
                       iPoint = nearest_cell(lat_ptin,lon_ptin,iPoint,nCells,maxEdges, &
                                             nEdgesOnCell,cellsOnCell, &
                                             latCell,lonCell)
