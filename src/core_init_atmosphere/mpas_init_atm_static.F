@@ -296,7 +296,7 @@ if ( (grid_maxlon - grid_minlon) > 300. ) then
         if (lonCell(i) < 0.01) then
             call mpas_log_write('**Problem in cell $i ??', intArgs=(/i/))
             call mpas_log_write('!! Found a too? small lon $r ', realArgs=(/lonCell(i)/))
-        fi
+        end if
         newlon = mod(lonCell(i) * 180.0 / PI + 180., 360.) - 180.
         if ( newlon > grid_maxlon ) then
             grid_maxlon = newlon
