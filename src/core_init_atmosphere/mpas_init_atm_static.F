@@ -276,24 +276,27 @@
 
 !MGB
 ! Min and max latitudes of the grid
+call mpas_log_write('Find latlon limits of the grid')
+call mpas_log_write('')
 grid_minlat = minval(latCell(:)) * 180.0 / PI
 grid_maxlat = maxval(latCell(:)) * 180.0 / PI
 grid_minlon = minval(lonCell(:)) * 180.0 / PI
 grid_maxlon = maxval(lonCell(:)) * 180.0 / PI
 
-call mpas_log_write('Found latlon limits of the grid')
-call mpas_log_write('')
 call mpas_log_write('--- grid_minlat = $r', realArgs=(/grid_minlat/))
 call mpas_log_write('--- grid_maxlat = $r', realArgs=(/grid_maxlat/))
-call mpas_log_write('--- grid_minlon = $r', realArgs=(/grid_minlon/))
-call mpas_log_write('--- grid_maxlon = $r', realArgs=(/grid_maxlon/))
-call mpas_log_write('')
 
-if ( (grid_maxlon - grid_minlon) > 355. ) then
+! possibly correct longitudes to negative values
+! if we believe the mesh may be crossing the zero meridian
+if ( (grid_maxlon - grid_minlon) > 300. ) then
     call mpas_log_write('The MPAS grid crosses the zero meridian')
     grid_minlon = 360.
     grid_maxlon = 0.
     do i=1,size(lonCell)
+        if (lonCell(i) < 0.01) then
+            call mpas_log_write('**Problem in cell $i ??', intArgs=(/i/))
+            call mpas_log_write('!! Found a too? small lon $r ', realArgs=(/lonCell(i)/))
+        fi
         newlon = mod(lonCell(i) * 180.0 / PI + 180., 360.) - 180.
         if ( newlon > grid_maxlon ) then
             grid_maxlon = newlon
@@ -304,10 +307,8 @@ if ( (grid_maxlon - grid_minlon) > 355. ) then
     end do
 end if
 
-call mpas_log_write('Found latlon limits of the grid')
-call mpas_log_write('')
-call mpas_log_write('--- grid_minlat = $r', realArgs=(/grid_minlat/))
-call mpas_log_write('--- grid_maxlat = $r', realArgs=(/grid_maxlat/))
+
+
 call mpas_log_write('--- grid_minlon = $r', realArgs=(/grid_minlon/))
 call mpas_log_write('--- grid_maxlon = $r', realArgs=(/grid_maxlon/))
 call mpas_log_write('')
