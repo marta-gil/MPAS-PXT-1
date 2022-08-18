@@ -400,9 +400,15 @@ call mpas_log_write('')
            !MGB Do we need to check this longitude?
            mintile_lon = start_lon + (iTileStart + (4) - 5) * geowidth
            maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * geowidth
-           if (grid_minlon < 0. .and. mintile_lon >= 180.) then
+           if (start_lon >= 0. .and. grid_minlon < 0. .and. mintile_lon >= 180.) then
                 mintile_lon = mintile_lon-360
                 maxtile_lon = maxtile_lon-360
+           end if
+           if (start_lon <= 0. .and. grid_minlon >= 180) then
+                grid_minlon = grid_minlon-360
+           end if
+           if (start_lon <= 0. .and. grid_maxlon >= 180) then
+                grid_maxlon = grid_maxlon-360
            end if
            if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
                write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
@@ -547,9 +553,11 @@ call mpas_log_write('')
            !MGB Do we need to check this longitude?
            mintile_lon = start_lon + (iTileStart + (1) - 2) * geowidth
            maxtile_lon = start_lon + (iTileStart + (nx) - 2) * geowidth
-           if (grid_minlon < 0. .and. mintile_lon >= 180.) then
-                mintile_lon = mintile_lon-360
-                maxtile_lon = maxtile_lon-360
+           if (grid_minlon >= 180) then
+                grid_minlon = grid_minlon-360
+           end if
+           if (grid_maxlon >= 180) then
+                grid_maxlon = grid_maxlon-360
            end if
            if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
                ! Note that for any MPAS mesh that crosses the meridian zero
@@ -680,19 +688,21 @@ call mpas_log_write('')
     jTileEnd = jTileStart + ny - 1
 
     !MGB Do we need to check this latitude?
-    mintile_lat = start_lat + (jTileStart + (1) - 5) * 0.0083333333
-    maxtile_lat = start_lat + (jTileStart + (ny) - 5) * 0.0083333333
+    mintile_lat = start_lat + (jTileStart + (1) - 2) * 0.0083333333
+    maxtile_lat = start_lat + (jTileStart + (ny) - 2) * 0.0083333333
     if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
 
         do iTileStart = 1,42001,nx
            iTileEnd = iTileStart + nx - 1
 
            !MGB Do we need to check this longitude?
-           mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
-           maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
-           if (grid_minlon < 0. .and. mintile_lon > 179) then
-                mintile_lon = mintile_lon-360
-                maxtile_lon = maxtile_lon-360
+           mintile_lon = start_lon + (iTileStart + (1) - 2) * 0.0083333333
+           maxtile_lon = start_lon + (iTileStart + (nx) - 2) * 0.0083333333
+           if (grid_minlon >= 180) then
+                grid_minlon = grid_minlon-360
+           end if
+           if (grid_maxlon >= 180) then
+                grid_maxlon = grid_maxlon-360
            end if
            if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
 
@@ -925,20 +935,23 @@ call mpas_log_write('')
        jTileEnd = jTileStart + ny - 1 - 6
 
         !MGB Do we need to check this latitude?
-        mintile_lat = start_lat + (jTileStart + (1) - 5) * 0.0083333333
-        maxtile_lat = start_lat + (jTileStart + (ny) - 5) * 0.0083333333
+        mintile_lat = (supersample_fac*(jTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * 0.05 / supersample_fac
+        maxtile_lat = (supersample_fac*(jTileStart-1) + (supersample_fac * (ny-3)) - (supersample_fac*3+1)) * 0.05 / supersample_fac
         if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
 
            do iTileStart=1,06001,nx-6
               iTileEnd = iTileStart + nx - 1 - 6
 
               !MGB Do we need to check this longitude?
-               mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
-               maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
-               if (grid_minlon < 0. .and. mintile_lon > 179) then
-                   mintile_lon = mintile_lon-360
-                   maxtile_lon = maxtile_lon-360
+               mintile_lon = start_lon + (supersample_fac*(iTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * 0.05 / supersample_fac
+               maxtile_lon = start_lon + (supersample_fac*(iTileStart-1) + (supersample_fac * (nx-3)) - (supersample_fac*3+1)) * 0.05 / supersample_fac
+               if (grid_minlon >= 180) then
+                    grid_minlon = grid_minlon-360
                end if
+               if (grid_maxlon >= 180) then
+                    grid_maxlon = grid_maxlon-360
+               end if
+
                if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
 
                   write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
@@ -1154,19 +1167,21 @@ call mpas_log_write('')
        jTileEnd = jTileStart + ny - 1
 
        !MGB Do we need to check this latitude?
-       mintile_lat = start_lat + (jTileStart + (1) - 5) * 0.0083333333
-       maxtile_lat = start_lat + (jTileStart + (ny) - 5) * 0.0083333333
+       mintile_lat = start_lat + (jTileStart + (1) - 2) * 0.0083333333
+       maxtile_lat = start_lat + (jTileStart + (ny) - 2) * 0.0083333333
        if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
 
            do iTileStart=1,42001,nx
               iTileEnd = iTileStart + nx - 1
 
               !MGB Do we need to check this longitude?
-              mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
-              maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
-              if (grid_minlon < 0. .and. mintile_lon > 179) then
-                mintile_lon = mintile_lon-360
-                maxtile_lon = maxtile_lon-360
+              mintile_lon = start_lon + (iTileStart + (1) - 2) * 0.0083333333
+              maxtile_lon = start_lon + (iTileStart + (nx) - 2) * 0.0083333333
+              if (grid_minlon >= 180) then
+                   grid_minlon = grid_minlon-360
+              end if
+              if (grid_maxlon >= 180) then
+                   grid_maxlon = grid_maxlon-360
               end if
               if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
 
@@ -1389,19 +1404,21 @@ call mpas_log_write('')
        jTileEnd = jTileStart + ny - 1 - 6
 
        !MGB Do we need to check this latitude?
-        mintile_lat = start_lat + (jTileStart + (1) - 5) * 0.0083333333
-        maxtile_lat = start_lat + (jTileStart + (ny) - 5) * 0.0083333333
+        mintile_lat = start_lat - (supersample_fac*(jTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * 0.05 / supersample_fac
+        maxtile_lat = start_lat - (supersample_fac*(jTileStart-1) + (supersample_fac * (ny-3)) - (supersample_fac*3+1)) * 0.05 / supersample_fac
         if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
 
            do iTileStart=1,06001,nx-6
               iTileEnd = iTileStart + nx - 1 - 6
 
               !MGB Do we need to check this longitude?
-               mintile_lon = start_lon + (iTileStart + (4) - 5) * 0.0083333333
-               maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * 0.0083333333
-               if (grid_minlon < 0. .and. mintile_lon > 179) then
-                    mintile_lon = mintile_lon-360
-                    maxtile_lon = maxtile_lon-360
+               mintile_lon = start_lon + (supersample_fac*(iTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * 0.05 / supersample_fac
+               maxtile_lon = start_lon + (supersample_fac*(iTileStart-1) + (supersample_fac * (nx-3)) - (supersample_fac*3+1)) * 0.05 / supersample_fac
+               if (grid_minlon >= 180) then
+                    grid_minlon = grid_minlon-360
+               end if
+               if (grid_maxlon >= 180) then
+                    grid_maxlon = grid_maxlon-360
                end if
                if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
 
