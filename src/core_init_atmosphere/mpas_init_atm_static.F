@@ -949,7 +949,7 @@ call mpas_log_write('')
         !MGB Do we need to check this latitude?
         mintile_lat = (supersample_fac*(jTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * 0.05 / supersample_fac
         maxtile_lat = (supersample_fac*(jTileStart-1) + (supersample_fac * (ny-3)) - (supersample_fac*3+1)) * 0.05 / supersample_fac
-        call mpas_log_write('    LAT Folder ($i, $i): $r $r', intArgs=(/jTileStart, jTileEnd/), realArgs=(/mintile_lat,maxtile_lat/))
+        call mpas_log_write(' LAT Folder ($i, $i): $r $r', intArgs=(/jTileStart, jTileEnd/), realArgs=(/mintile_lat,maxtile_lat/))
         if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
 
            do iTileStart=1,06001,nx-6
@@ -964,7 +964,7 @@ call mpas_log_write('')
                if (grid_maxlon >= 180) then
                     grid_maxlon = grid_maxlon-360
                end if
-               call mpas_log_write('    LAT Folder ($i, $i): $r $r', intArgs=(/iTileStart, iTileEnd/), realArgs=(/mintile_lon,maxtile_lon/))
+               call mpas_log_write('     LON Folder ($i, $i): $r $r', intArgs=(/iTileStart, iTileEnd/), realArgs=(/mintile_lon,maxtile_lon/))
                if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
 
                   write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
@@ -1020,7 +1020,7 @@ call mpas_log_write('')
 
                !MGB end if we need to loop through this lon
                else
-                   call mpas_log_write('Skip longitude folder from $r to $r', intArgs=(/iTileStart/), realArgs=(/mintile_lon,maxtile_lon/))
+                   call mpas_log_write('     - Skip longitude folder from $r to $r', intArgs=(/iTileStart/), realArgs=(/mintile_lon,maxtile_lon/))
                end if
 
            end do
