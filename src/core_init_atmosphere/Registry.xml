@@ -744,11 +744,6 @@
                 <var name="ter" type="real" dimensions="nCells" units="m"
                      description="terrain height"/>
 
-                    <!-- MGB add land use index to static.nc -->
-                <var name="lu_index" type="integer"  dimensions="nCells" units="unitless"
-                     description="land-ocean mask (1=land ; 0=ocean)"/>
-                    <!-- end MGB -->
-
                 <var name="landmask" type="integer"  dimensions="nCells" units="unitless"
                      description="land-ocean mask (1=land ; 0=ocean)"/>
 
