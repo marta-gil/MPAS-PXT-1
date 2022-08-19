@@ -728,8 +728,8 @@ call mpas_log_write('')
                iPoint = 1
                do j=1,ny
                do i=1,nx
-                  lat_pt = start_lon  + (jTileStart + j - 2) * geowidth
-                  lon_pt = end_lon + (iTileStart + i - 2) * geowidth
+                  lat_pt = start_lat  + (jTileStart + j - 2) * geowidth
+                  lon_pt = start_lon + (iTileStart + i - 2) * geowidth
                   lat_pt = lat_pt * PI / 180.0
                   lon_pt = lon_pt * PI / 180.0
 
