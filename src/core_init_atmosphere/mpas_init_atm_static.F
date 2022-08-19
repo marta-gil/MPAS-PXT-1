@@ -969,8 +969,10 @@ call mpas_log_write('')
        jTileEnd = jTileStart + ny - 1 - 6
 
         !MGB Do we need to check this latitude?
-        mintile_lat = start_lon + (supersample_fac*(jTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * geowidth
-        maxtile_lat = start_lon + (supersample_fac*(jTileStart-1) + (supersample_fac * (ny-3)) - (supersample_fac*3+1)) * geowidth
+        ! Swap min and max latitude because we start from latitude 90
+        ! ie, the initial lat is larger than the end lat of the tile
+        maxtile_lat = start_lat - (supersample_fac*(jTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * geowidth
+        mintile_lat = start_lat - (supersample_fac*(jTileStart-1) + (supersample_fac * (ny-3)) - (supersample_fac*3+1)) * geowidth
         if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
            call mpas_log_write(' LAT Folder ($i, $i): $r $r', intArgs=(/jTileStart, jTileEnd/), realArgs=(/mintile_lat,maxtile_lat/))
 
@@ -978,10 +980,8 @@ call mpas_log_write('')
               iTileEnd = iTileStart + nx - 1 - 6
 
               !MGB Do we need to check this longitude?
-              ! Swap min and max latitude because we start from latitude 90
-              ! ie, the initial lat is larger than the end lat of the tile
-               maxtile_lon = start_lon + (supersample_fac*(iTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * geowidth
-               mintile_lon = start_lon + (supersample_fac*(iTileStart-1) + (supersample_fac * (nx-3)) - (supersample_fac*3+1)) * geowidth
+               mintile_lon = start_lon + (supersample_fac*(iTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * geowidth
+               maxtile_lon = start_lon + (supersample_fac*(iTileStart-1) + (supersample_fac * (nx-3)) - (supersample_fac*3+1)) * geowidth
                if (grid_minlon >= 180) then
                     grid_minlon = grid_minlon-360
                end if
