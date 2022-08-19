@@ -718,7 +718,7 @@ call mpas_log_write('')
 
                write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)// &
                      geog_sub_path,iTileStart,'-',iTileEnd,'.',jTileStart,'-',jTileEnd
-               !call mpas_log_write(trim(fname))
+               call mpas_log_write(trim(fname))
                call mpas_f_to_c_string(fname, c_fname)
 
                call read_geogrid(c_fname,rarray_ptr,nx,ny,nz,isigned,endian, &
