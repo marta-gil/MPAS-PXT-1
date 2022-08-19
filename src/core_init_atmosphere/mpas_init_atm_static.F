@@ -919,6 +919,7 @@ call mpas_log_write('')
  if (trim(config_maxsnowalbedo_data) == 'MODIS') then
 
     call mpas_log_write('Using MODIS 0.05-deg data for maximum snow albedo')
+    supersample_fac = 1
     if (supersample_fac > 1) then
        call mpas_log_write('   Dataset will be supersampled by a factor of $i', intArgs=(/supersample_fac/))
     end if
@@ -949,8 +950,8 @@ call mpas_log_write('')
         !MGB Do we need to check this latitude?
         mintile_lat = (supersample_fac*(jTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * 0.05 / supersample_fac
         maxtile_lat = (supersample_fac*(jTileStart-1) + (supersample_fac * (ny-3)) - (supersample_fac*3+1)) * 0.05 / supersample_fac
-        call mpas_log_write(' LAT Folder ($i, $i): $r $r', intArgs=(/jTileStart, jTileEnd/), realArgs=(/mintile_lat,maxtile_lat/))
         if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
+           call mpas_log_write(' LAT Folder ($i, $i): $r $r', intArgs=(/jTileStart, jTileEnd/), realArgs=(/mintile_lat,maxtile_lat/))
 
            do iTileStart=1,06001,nx-6
               iTileEnd = iTileStart + nx - 1 - 6
@@ -964,12 +965,12 @@ call mpas_log_write('')
                if (grid_maxlon >= 180) then
                     grid_maxlon = grid_maxlon-360
                end if
-               call mpas_log_write('     LON Folder ($i, $i): $r $r', intArgs=(/iTileStart, iTileEnd/), realArgs=(/mintile_lon,maxtile_lon/))
                if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
+                  call mpas_log_write('     LON Folder ($i, $i): $r $r', intArgs=(/iTileStart, iTileEnd/), realArgs=(/mintile_lon,maxtile_lon/))
 
                   write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)//trim(geog_sub_path), &
                                iTileStart,'-',iTileEnd,'.',jTileStart,'-',jTileEnd
-                  call mpas_log_write(trim(fname))
+                  !call mpas_log_write(trim(fname))
                   call mpas_f_to_c_string(fname, c_fname)
 
                   call read_geogrid(c_fname,rarray_ptr,nx,ny,nz,isigned,endian, &
@@ -1029,9 +1030,6 @@ call mpas_log_write('')
                   end do
                   end do
 
-               !MGB end if we need to loop through this lon
-               else
-                   call mpas_log_write('     - Skip longitude folder from $r to $r', intArgs=(/iTileStart/), realArgs=(/mintile_lon,maxtile_lon/))
                end if
 
            end do
