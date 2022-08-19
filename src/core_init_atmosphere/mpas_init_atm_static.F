@@ -1076,10 +1076,8 @@ call mpas_log_write('')
            call mpas_log_write('   This happens because the grid-spacing is finer than in the reference snow albedo dataset.', messageType=MPAS_LOG_ERR)
            call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
            !call mpas_log_write('Use finer reference snow albedo or modify the code.', messageType=MPAS_LOG_CRIT)
-
-       else
-          snoalb(iCell) = snoalb(iCell) / real(nhs(iCell))
        end if
+       snoalb(iCell) = snoalb(iCell) / real(nhs(iCell))
        snoalb(iCell) = 0.01_RKIND * snoalb(iCell)        ! Convert from percent to fraction
     end do
     deallocate(rarray)
