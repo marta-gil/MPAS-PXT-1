@@ -1068,18 +1068,22 @@ call mpas_log_write('')
        ! to be treated in this way tends to be a very small fraction of the total number of cells.
        !
        if (nhs(iCell) == 0) then
-          ! MGB remove this default albedo
-          !snoalb(iCell) = fillval
-
-          !MGB Test that no cells are empty of snow albedo data
-           call mpas_log_write('--- Cell $i was not filled by any snow albedo', intArgs=(/iCell/))
-           call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
-           call mpas_log_write('Invalid snow albedo in MPAS mesh: at least one cell has NaN snow albedo', messageType=MPAS_LOG_ERR)
-           call mpas_log_write('   This happens because the grid-spacing is finer than in the reference snow albedo dataset.', messageType=MPAS_LOG_ERR)
-           call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
-           !call mpas_log_write('Use finer reference snow albedo or modify the code.', messageType=MPAS_LOG_CRIT)
+          ! MGB set default albedo only for elements in water
+          ! throw error if the nhs==0 happens in land
+          if (landmask(iCell) == 0) then
+               snoalb(iCell) = fillval
+          else
+              !MGB Test that no cells are empty of snow albedo data
+               call mpas_log_write('--- Cell $i was not filled by any snow albedo', intArgs=(/iCell/))
+               call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+               call mpas_log_write('Invalid snow albedo in MPAS mesh: at least one cell has NaN snow albedo', messageType=MPAS_LOG_ERR)
+               call mpas_log_write('   This happens because the grid-spacing is finer than in the reference snow albedo dataset.', messageType=MPAS_LOG_ERR)
+               call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+               !call mpas_log_write('Use finer reference snow albedo or modify the code.', messageType=MPAS_LOG_CRIT)
+           end if
+       else
+           snoalb(iCell) = snoalb(iCell) / real(nhs(iCell))
        end if
-       snoalb(iCell) = snoalb(iCell) / real(nhs(iCell))
        snoalb(iCell) = 0.01_RKIND * snoalb(iCell)        ! Convert from percent to fraction
     end do
     deallocate(rarray)
@@ -1472,8 +1476,6 @@ call mpas_log_write('')
         maxtile_lat = start_lat - (supersample_fac*(jTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * geowidth
         mintile_lat = start_lat - (supersample_fac*(jTileStart-1) + (supersample_fac * (ny-3)) - (supersample_fac*3+1)) * geowidth
 
-        call mpas_log_write(' ?LAT Folder ($i, $i): $r $r', intArgs=(/jTileStart, jTileEnd/), realArgs=(/mintile_lat,maxtile_lat/))
-
         if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
            call mpas_log_write(' LAT Folder ($i, $i): $r $r', intArgs=(/jTileStart, jTileEnd/), realArgs=(/mintile_lat,maxtile_lat/))
 
@@ -1489,7 +1491,6 @@ call mpas_log_write('')
                if (grid_maxlon >= 180) then
                     grid_maxlon = grid_maxlon-360
                end if
-               call mpas_log_write('     ?LON Folder ($i, $i): $r $r', intArgs=(/iTileStart, iTileEnd/), realArgs=(/mintile_lon,maxtile_lon/))
 
                if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
                   call mpas_log_write('     LON Folder ($i, $i): $r $r', intArgs=(/iTileStart, iTileEnd/), realArgs=(/mintile_lon,maxtile_lon/))
