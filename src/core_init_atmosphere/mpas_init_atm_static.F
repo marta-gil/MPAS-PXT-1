@@ -505,6 +505,10 @@ call mpas_log_write('')
  start_lat = -89.99583
  start_lon = -179.99583
 
+ !MGB Fake subloops for every geogrid cell
+ subsamples = 2.
+ subwidth = (geowidth * PI / 180.0) / subsamples
+
  surface_input_select1: select case(trim(config_landuse_data))
     case('USGS')
        call mpas_log_write('Using 24-class USGS 30-arc-second land cover dataset')
@@ -674,12 +678,26 @@ call mpas_log_write('')
 
  rarray_ptr = c_loc(rarray)
 
+ !MGB
+ !Print some header to show what file are we reading
+ call mpas_log_write('Using 30-arc-second soil type dataset called soiltype_top_30s')
+ geog_sub_path = 'soiltype_top_30s/'
+
+ !MGB Width of the 30s cells in degrees
+ geowidth = 0.0083333333
+ start_lat = -89.99583
+ start_lon = -179.99583
+
+ !MGB Fake subloops for every geogrid cell
+ subsamples = 2.
+ subwidth = (geowidth * PI / 180.0) / subsamples
+
  do jTileStart = 1,20401,ny
     jTileEnd = jTileStart + ny - 1
 
     !MGB Do we need to check this latitude?
-    mintile_lat = start_lat + (jTileStart + (1) - 2) * 0.0083333333
-    maxtile_lat = start_lat + (jTileStart + (ny) - 2) * 0.0083333333
+    mintile_lat = start_lat + (jTileStart + (1) - 2) * geowidth
+    maxtile_lat = start_lat + (jTileStart + (ny) - 2) * geowidth
     if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
         call mpas_log_write(' LAT Folder ($i, $i): $r $r', intArgs=(/jTileStart, jTileEnd/), realArgs=(/mintile_lat,maxtile_lat/))
 
@@ -687,8 +705,8 @@ call mpas_log_write('')
            iTileEnd = iTileStart + nx - 1
 
            !MGB Do we need to check this longitude?
-           mintile_lon = start_lon + (iTileStart + (1) - 2) * 0.0083333333
-           maxtile_lon = start_lon + (iTileStart + (nx) - 2) * 0.0083333333
+           mintile_lon = start_lon + (iTileStart + (1) - 2) * geowidth
+           maxtile_lon = start_lon + (iTileStart + (nx) - 2) * geowidth
            if (grid_minlon >= 180) then
                 grid_minlon = grid_minlon-360
            end if
@@ -699,7 +717,7 @@ call mpas_log_write('')
                call mpas_log_write('     LON Folder ($i, $i): $r $r', intArgs=(/iTileStart, iTileEnd/), realArgs=(/mintile_lon,maxtile_lon/))
 
                write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)// &
-                     'soiltype_top_30s/',iTileStart,'-',iTileEnd,'.',jTileStart,'-',jTileEnd
+                     geog_sub_path,iTileStart,'-',iTileEnd,'.',jTileStart,'-',jTileEnd
                !call mpas_log_write(trim(fname))
                call mpas_f_to_c_string(fname, c_fname)
 
@@ -710,8 +728,8 @@ call mpas_log_write('')
                iPoint = 1
                do j=1,ny
                do i=1,nx
-                  lat_pt = -89.99583  + (jTileStart + j - 2) * 0.0083333333
-                  lon_pt = -179.99583 + (iTileStart + i - 2) * 0.0083333333
+                  lat_pt = start_lon  + (jTileStart + j - 2) * geowidth
+                  lon_pt = end_lon + (iTileStart + i - 2) * geowidth
                   lat_pt = lat_pt * PI / 180.0
                   lon_pt = lon_pt * PI / 180.0
 
@@ -796,6 +814,7 @@ call mpas_log_write('')
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! CORRECT INCONSISTENT SOIL AND LAND USE DATA
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
  do iCell = 1,nCells
     if (lu_index(iCell) == iswater_lu .or. &
         soilcat_top(iCell) == 14) then
@@ -803,13 +822,17 @@ call mpas_log_write('')
             call mpas_log_write('Turning lu_index into water at $i', intArgs=(/iCell/))
             lu_index(iCell) = iswater_lu
         end if
-        if (soilcat_top(iCell) /= 14) then
-            !MGB
+
+        !MGB
+        ! what if land use is water but soil category is not?
+        ! Previous code: turn soilcat to water.
+        !if (soilcat_top(iCell) /= 14) then
             !call mpas_log_write('Turning soilcat_top into water at $i', intArgs=(/iCell/))
             !soilcat_top(iCell) = 14
-            call mpas_log_write('Land use is water but soilcat_top not at $i', intArgs=(/iCell/))
-            call mpas_log_write('  Previous code: turn soilcat to water. Now: do nothing, keep inconsistent')
-        end if
+        !end if
+        ! Now: do nothing, keep inconsistent
+        ! Because random water spots appeared if we did the previous correction
+
     end if
  end do
 
@@ -908,11 +931,14 @@ call mpas_log_write('')
 !
  if (trim(config_maxsnowalbedo_data) == 'MODIS') then
 
+
+
     call mpas_log_write('Using MODIS 0.05-deg data for maximum snow albedo')
-    supersample_fac = 4
     if (supersample_fac > 1) then
        call mpas_log_write('   Dataset will be supersampled by a factor of $i', intArgs=(/supersample_fac/))
     end if
+
+
 
     nx = 1206
     ny = 1206
@@ -934,12 +960,19 @@ call mpas_log_write('')
     start_lon = -180.0 + 0.05 * 0.5 / supersample_fac
     geog_sub_path = 'maxsnowalb_modis/'
 
+    !MGB Width of the supersampled cells in degrees
+    geowidth = 0.05 / supersample_fac
+
+    !MGB Fake subloops for every geogrid cell
+    subsamples = 3.
+    subwidth = (geowidth * PI / 180.0) / subsamples
+
     do jTileStart = 1,02401,ny-6
        jTileEnd = jTileStart + ny - 1 - 6
 
         !MGB Do we need to check this latitude?
-        mintile_lat = (supersample_fac*(jTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * 0.05 / supersample_fac
-        maxtile_lat = (supersample_fac*(jTileStart-1) + (supersample_fac * (ny-3)) - (supersample_fac*3+1)) * 0.05 / supersample_fac
+        mintile_lat = (supersample_fac*(jTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * geowidth
+        maxtile_lat = (supersample_fac*(jTileStart-1) + (supersample_fac * (ny-3)) - (supersample_fac*3+1)) * geowidth
         if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
            call mpas_log_write(' LAT Folder ($i, $i): $r $r', intArgs=(/jTileStart, jTileEnd/), realArgs=(/mintile_lat,maxtile_lat/))
 
@@ -947,8 +980,8 @@ call mpas_log_write('')
               iTileEnd = iTileStart + nx - 1 - 6
 
               !MGB Do we need to check this longitude?
-               mintile_lon = start_lon + (supersample_fac*(iTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * 0.05 / supersample_fac
-               maxtile_lon = start_lon + (supersample_fac*(iTileStart-1) + (supersample_fac * (nx-3)) - (supersample_fac*3+1)) * 0.05 / supersample_fac
+               mintile_lon = start_lon + (supersample_fac*(iTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * geowidth
+               maxtile_lon = start_lon + (supersample_fac*(iTileStart-1) + (supersample_fac * (nx-3)) - (supersample_fac*3+1)) * geowidth
                if (grid_minlon >= 180) then
                     grid_minlon = grid_minlon-360
                end if
@@ -973,8 +1006,8 @@ call mpas_log_write('')
                      ii = (i - 1) / supersample_fac + 1
                      jj = (j - 1) / supersample_fac + 1
 
-                     lat_pt = start_lat - (supersample_fac*(jTileStart-1) + j - (supersample_fac*3+1)) * 0.05 / supersample_fac
-                     lon_pt = start_lon + (supersample_fac*(iTileStart-1) + i - (supersample_fac*3+1)) * 0.05 / supersample_fac
+                     lat_pt = start_lat - (supersample_fac*(jTileStart-1) + j - (supersample_fac*3+1)) * geowidth
+                     lon_pt = start_lon + (supersample_fac*(iTileStart-1) + i - (supersample_fac*3+1)) * geowidth
                      lat_pt = lat_pt * PI / 180.0
                      lon_pt = lon_pt * PI / 180.0
 
@@ -1171,6 +1204,13 @@ call mpas_log_write('')
     start_lat = -89.99583
     start_lon = -179.99583
     geog_sub_path = 'greenfrac_fpar_modis/'
+
+    !MGB Width of the 30s cells in degrees
+    geowidth = 0.0083333333
+
+    !MGB Fake subloops for every geogrid cell
+    subsamples = 2.
+    subwidth = (geowidth * PI / 180.0) / subsamples
 
     do jTileStart = 1,20401,ny
        jTileEnd = jTileStart + ny - 1
@@ -1394,7 +1434,6 @@ call mpas_log_write('')
  if (trim(config_albedo_data) == 'MODIS') then
 
     call mpas_log_write('Using MODIS 0.05-deg data for climatological monthly albedo')
-    supersample_fac = 5
     if (supersample_fac > 1) then
        call mpas_log_write('   Dataset will be supersampled by a factor of $i', intArgs=(/supersample_fac/))
     end if
@@ -1419,12 +1458,19 @@ call mpas_log_write('')
     start_lon = -180.0 + 0.05 * 0.5 / supersample_fac
     geog_sub_path = 'albedo_modis/'
 
+    !MGB Width of the supersampled cells in degrees
+    geowidth = 0.05 / supersample_fac
+
+    !MGB Fake subloops for every geogrid cell
+    subsamples = 3.
+    subwidth = (geowidth * PI / 180.0) / subsamples
+
     do jTileStart = 1,02401,ny-6
        jTileEnd = jTileStart + ny - 1 - 6
 
        !MGB Do we need to check this latitude?
-        mintile_lat = start_lat - (supersample_fac*(jTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * 0.05 / supersample_fac
-        maxtile_lat = start_lat - (supersample_fac*(jTileStart-1) + (supersample_fac * (ny-3)) - (supersample_fac*3+1)) * 0.05 / supersample_fac
+        mintile_lat = start_lat - (supersample_fac*(jTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * geowidth
+        maxtile_lat = start_lat - (supersample_fac*(jTileStart-1) + (supersample_fac * (ny-3)) - (supersample_fac*3+1)) * geowidth
         if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
            call mpas_log_write(' LAT Folder ($i, $i): $r $r', intArgs=(/jTileStart, jTileEnd/), realArgs=(/mintile_lat,maxtile_lat/))
 
@@ -1432,8 +1478,8 @@ call mpas_log_write('')
               iTileEnd = iTileStart + nx - 1 - 6
 
               !MGB Do we need to check this longitude?
-               mintile_lon = start_lon + (supersample_fac*(iTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * 0.05 / supersample_fac
-               maxtile_lon = start_lon + (supersample_fac*(iTileStart-1) + (supersample_fac * (nx-3)) - (supersample_fac*3+1)) * 0.05 / supersample_fac
+               mintile_lon = start_lon + (supersample_fac*(iTileStart-1) + (supersample_fac * 3 + 1) - (supersample_fac*3+1)) * geowidth
+               maxtile_lon = start_lon + (supersample_fac*(iTileStart-1) + (supersample_fac * (nx-3)) - (supersample_fac*3+1)) * geowidth
                if (grid_minlon >= 180) then
                     grid_minlon = grid_minlon-360
                end if
@@ -1458,8 +1504,8 @@ call mpas_log_write('')
                      ii = (i - 1) / supersample_fac + 1
                      jj = (j - 1) / supersample_fac + 1
 
-                     lat_pt = start_lat - (supersample_fac*(jTileStart-1) + j - (supersample_fac*3+1)) * 0.05 / supersample_fac
-                     lon_pt = start_lon + (supersample_fac*(iTileStart-1) + i - (supersample_fac*3+1)) * 0.05 / supersample_fac
+                     lat_pt = start_lat - (supersample_fac*(jTileStart-1) + j - (supersample_fac*3+1)) * geowidth
+                     lon_pt = start_lon + (supersample_fac*(iTileStart-1) + i - (supersample_fac*3+1)) * geowidth
                      lat_pt = lat_pt * PI / 180.0
                      lon_pt = lon_pt * PI / 180.0
 
