@@ -1580,17 +1580,18 @@ call mpas_log_write('')
        ! For land points that have no overlap with valid data, and for water points,
        ! just use the fill value...
        if (nhs(iCell) == 0) then
-          ! MGB remove this default albedo
-          !albedo12m(:,iCell) = fillval
-
-          !MGB Test that no cells are empty of 12 months snow albedo data
-           call mpas_log_write('--- Cell $i was not filled by any 12m albedo', intArgs=(/iCell/))
-           call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
-           call mpas_log_write('Invalid 12m albedo in MPAS mesh: at least one cell has NaN 12m albedo', messageType=MPAS_LOG_ERR)
-           call mpas_log_write('   This happens because the grid-spacing is finer than in the reference 12m albedo dataset.', messageType=MPAS_LOG_ERR)
-           call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
-           !call mpas_log_write('Use finer reference 12m albedo or modify the code.', messageType=MPAS_LOG_CRIT)
-
+          ! MGB set default albedo only for elements in water
+          ! throw error if the nhs==0 happens in land
+          if (landmask(iCell) == 0) then
+               albedo12m(:,iCell) = fillval
+          else
+              !MGB Test that no cells are empty of 12 months snow albedo data
+               call mpas_log_write('--- Cell $i was not filled by any 12m albedo', intArgs=(/iCell/))
+               call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+               call mpas_log_write('Invalid 12m albedo in MPAS mesh: at least one cell has NaN 12m albedo', messageType=MPAS_LOG_ERR)
+               call mpas_log_write('   This happens because the grid-spacing is finer than in the reference 12m albedo dataset.', messageType=MPAS_LOG_ERR)
+               call mpas_log_write('*****************************************************************', messageType=MPAS_LOG_ERR)
+               !call mpas_log_write('Use finer reference 12m albedo or modify the code.', messageType=MPAS_LOG_CRIT)
        else
           albedo12m(:,iCell) = albedo12m(:,iCell) / real(nhs(iCell))
        end if
