@@ -5,6 +5,9 @@
 ! Additional copyright and license information can be found in the LICENSE file
 ! distributed with this code, or at http://mpas-dev.github.com/license.html
 !
+!   Modified Marta Gil Bardaji
+!   19/08/2022 - mpasMGBv7.3
+
 !==================================================================================================
  module mpas_init_atm_static
 !==================================================================================================
