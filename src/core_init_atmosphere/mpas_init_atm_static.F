@@ -987,34 +987,45 @@ call mpas_log_write('')
                      lat_pt = lat_pt * PI / 180.0
                      lon_pt = lon_pt * PI / 180.0
 
-                     iPoint = nearest_cell(lat_pt,lon_pt,iPoint,nCells,maxEdges, &
-                                           nEdgesOnCell,cellsOnCell, &
-                                           latCell,lonCell)
-                     if (rarray(ii,jj,1) /= msgval) then
+                     !MGB subloop to increase resolution possibilities
+                     !call mpas_log_write(' POINT $r $r', realArgs=(/lat_pt,lon_pt/))
+                     do iin=0,subsamples-1
+                     do jin=0,subsamples-1
+                         lat_ptin = lat_pt + (-subsamples/2. + 0.5 + jin)*subwidth
+                         lon_ptin = lon_pt + (-subsamples/2. + 0.5 + iin)*subwidth
 
-                        !
-                        ! This field only matters for land cells, and for all but the outermost boundary cells,
-                        ! we can safely assume that the nearest model grid cell contains the pixel (else, a different
-                        ! cell would be nearest)
-                        !
-                        if (landmask(iPoint) == 1 .and. bdyMaskCell(iPoint) < nBdyLayers) then
-                           snoalb(iPoint) = snoalb(iPoint) + rarray(ii,jj,1)
-                           nhs(iPoint) = nhs(iPoint) + 1
+                         !call mpas_log_write('    Subcell ($i, $i): $r $r', intArgs=(/jin, iin/), realArgs=(/lat_ptin,lon_ptin/))
 
-                        ! For outermost land cells, additional work is needed to verify that the pixel
-                        ! actually lies within the nearest cell
-                        else if (landmask(iPoint) == 1) then
-                           zPixel = sphere_radius * sin(lat_pt)                  ! Model cell coordinates assume a "full" sphere radius
-                           xPixel = sphere_radius * cos(lon_pt) * cos(lat_pt)    ! at this point, so we need to ues the same radius
-                           yPixel = sphere_radius * sin(lon_pt) * cos(lat_pt)    ! for source pixel coordinates
+                         iPoint = nearest_cell(lat_ptin,lon_ptin,iPoint,nCells,maxEdges, &
+                                               nEdgesOnCell,cellsOnCell, &
+                                               latCell,lonCell)
+                         if (rarray(ii,jj,1) /= msgval) then
 
-                           if (in_cell(xPixel, yPixel, zPixel, xCell(iPoint), yCell(iPoint), zCell(iPoint), &
-                                       nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
-                              snoalb(iPoint) = snoalb(iPoint) + rarray(ii,jj,1)
-                              nhs(iPoint) = nhs(iPoint) + 1
-                           end if
-                        end if
-                     end if
+                            !
+                            ! This field only matters for land cells, and for all but the outermost boundary cells,
+                            ! we can safely assume that the nearest model grid cell contains the pixel (else, a different
+                            ! cell would be nearest)
+                            !
+                            if (landmask(iPoint) == 1 .and. bdyMaskCell(iPoint) < nBdyLayers) then
+                               snoalb(iPoint) = snoalb(iPoint) + rarray(ii,jj,1)
+                               nhs(iPoint) = nhs(iPoint) + 1
+
+                            ! For outermost land cells, additional work is needed to verify that the pixel
+                            ! actually lies within the nearest cell
+                            else if (landmask(iPoint) == 1) then
+                               zPixel = sphere_radius * sin(lat_ptin)                  ! Model cell coordinates assume a "full" sphere radius
+                               xPixel = sphere_radius * cos(lon_ptin) * cos(lat_ptin)  ! at this point, so we need to ues the same radius
+                               yPixel = sphere_radius * sin(lon_ptin) * cos(lat_ptin)  ! for source pixel coordinates
+
+                               if (in_cell(xPixel, yPixel, zPixel, xCell(iPoint), yCell(iPoint), zCell(iPoint), &
+                                           nEdgesOnCell(iPoint), verticesOnCell(:,iPoint), xVertex, yVertex, zVertex)) then
+                                  snoalb(iPoint) = snoalb(iPoint) + rarray(ii,jj,1)
+                                  nhs(iPoint) = nhs(iPoint) + 1
+                               end if
+                            end if
+                         end if
+                      end do
+                      end do
                   end do
                   end do
 
