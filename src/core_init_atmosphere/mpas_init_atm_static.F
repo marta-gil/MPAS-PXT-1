@@ -717,7 +717,7 @@ call mpas_log_write('')
                call mpas_log_write('     LON Folder ($i, $i): $r $r', intArgs=(/iTileStart, iTileEnd/), realArgs=(/mintile_lon,maxtile_lon/))
 
                write(fname,'(a,i5.5,a1,i5.5,a1,i5.5,a1,i5.5)') trim(geog_data_path)// &
-                     geog_sub_path,iTileStart,'-',iTileEnd,'.',jTileStart,'-',jTileEnd
+                     trim(geog_sub_path),iTileStart,'-',iTileEnd,'.',jTileStart,'-',jTileEnd
                call mpas_log_write(trim(fname))
                call mpas_f_to_c_string(fname, c_fname)
 
