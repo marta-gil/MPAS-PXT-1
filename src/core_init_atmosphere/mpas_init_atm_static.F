@@ -808,7 +808,7 @@ call mpas_log_write('')
             !call mpas_log_write('Turning soilcat_top into water at $i', intArgs=(/iCell/))
             !soilcat_top(iCell) = 14
             call mpas_log_write('Land use is water but soilcat_top not at $i', intArgs=(/iCell/))
-            call mpas_log_write('  Previous code: turn soilcat to water. Now: do nothing, keep inconsistent',)
+            call mpas_log_write('  Previous code: turn soilcat to water. Now: do nothing, keep inconsistent')
         end if
     end if
  end do
