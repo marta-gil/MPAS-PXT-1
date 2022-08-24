@@ -287,7 +287,7 @@ minarea = minval(areaCell(:))
 call mpas_log_write('--- Minimum Area = $r', realArgs=(/minarea/))
 if ( minarea < 0.001 ) then
     call mpas_log_write('Recompute minimum area ignoring super small values')
-    minarea = 10**12
+    minarea = 10.0**9
     do i=1,size(areaCell)
         if (areaCell(i) > 0.001) then
             newarea = areaCell(i)
