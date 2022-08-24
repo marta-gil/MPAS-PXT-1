@@ -389,6 +389,7 @@ call mpas_log_write('')
 !
 ! Interpolate HGT
 !
+ call mpas_log_write('---> START interpolate HGT')
 !nx = 126
 !ny = 126
  nx = 1206
@@ -433,7 +434,7 @@ call mpas_log_write(' - Reference dataset grid-spacing = $r degrees', realArgs=(
 subsamples2 = sqrt(2.) * geowidth / minres
 call mpas_log_write('   -- Ratio sqrt(2)*geowidth/minres = $r', realArgs=(/subsamples2/))
 subsamples = int(subsamples2) + 1
-call mpas_log_write('   --- subsamples set to $i', intArgs=(/subsamples/))
+call mpas_log_write('   --- Subsamples set to $i', intArgs=(/subsamples/))
 subwidth = (geowidth * PI / 180.0) / subsamples
 call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidth/))
 
@@ -560,6 +561,7 @@ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidt
 !
 ! Interpolate LU_INDEX
 !
+ call mpas_log_write('---> START interpolate LU_INDEX')
 
 !MGB Width of the 30s cells in degrees
  geowidth = 0.0083333333
@@ -571,7 +573,7 @@ call mpas_log_write(' - Reference dataset grid-spacing = $r degrees', realArgs=(
 subsamples2 = sqrt(2.) * geowidth / minres
 call mpas_log_write('   -- Ratio sqrt(2)*geowidth/minres = $r', realArgs=(/subsamples2/))
 subsamples = int(subsamples2) + 1
-call mpas_log_write('   --- subsamples set to $i', intArgs=(/subsamples/))
+call mpas_log_write('   --- Subsamples set to $i', intArgs=(/subsamples/))
 subwidth = (geowidth * PI / 180.0) / subsamples
 call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidth/))
 
@@ -728,6 +730,7 @@ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidt
 !
 ! Interpolate SOILCAT_TOP
 !
+ call mpas_log_write('---> START interpolate SOILCAT_TOP')
  nx = 1200
  ny = 1200
  nz = 1
@@ -759,7 +762,7 @@ call mpas_log_write(' - Reference dataset grid-spacing = $r degrees', realArgs=(
 subsamples2 = sqrt(2.) * geowidth / minres
 call mpas_log_write('   -- Ratio sqrt(2)*geowidth/minres = $r', realArgs=(/subsamples2/))
 subsamples = int(subsamples2) + 1
-call mpas_log_write('   --- subsamples set to $i', intArgs=(/subsamples/))
+call mpas_log_write('   --- Subsamples set to $i', intArgs=(/subsamples/))
 subwidth = (geowidth * PI / 180.0) / subsamples
 call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidth/))
 
@@ -911,6 +914,7 @@ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidt
 !
 ! Derive LANDMASK
 !
+ call mpas_log_write('---> START interpolate LANDMASK')
  landmask(:) = 0
  do iCell=1, nCells
     !MGB
@@ -923,6 +927,7 @@ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidt
 !
 ! Interpolate SOILTEMP:
 !
+ call mpas_log_write('---> START interpolate SOILTEMP')
  nx = 186
  ny = 186
  nz = 1
@@ -1000,9 +1005,9 @@ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidt
 !
 ! Interpolate SNOALB
 !
+ call mpas_log_write('---> START interpolate SNOALB')
+
  if (trim(config_maxsnowalbedo_data) == 'MODIS') then
-
-
 
     call mpas_log_write('Using MODIS 0.05-deg data for maximum snow albedo')
     if (supersample_fac > 1) then
@@ -1037,7 +1042,7 @@ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidt
     subsamples2 = sqrt(2.) * geowidth / minres
     call mpas_log_write('   -- Ratio sqrt(2)*geowidth/minres = $r', realArgs=(/subsamples2/))
     subsamples = int(subsamples2) + 1
-    call mpas_log_write('   --- subsamples set to $i', intArgs=(/subsamples/))
+    call mpas_log_write('   --- Subsamples set to $i', intArgs=(/subsamples/))
     subwidth = (geowidth * PI / 180.0) / subsamples
     call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidth/))
 
@@ -1259,6 +1264,7 @@ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidt
 !
 ! Interpolate GREENFRAC
 !
+ call mpas_log_write('---> START interpolate GREENFRAC')
  if (trim(config_vegfrac_data) == 'MODIS') then
 
     call mpas_log_write('Using MODIS FPAR 30-arc-second data for climatological monthly vegetation fraction')
@@ -1291,7 +1297,7 @@ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidt
     subsamples2 = sqrt(2.) * geowidth / minres
     call mpas_log_write('   -- Ratio sqrt(2)*geowidth/minres = $r', realArgs=(/subsamples2/))
     subsamples = int(subsamples2) + 1
-    call mpas_log_write('   --- subsamples set to $i', intArgs=(/subsamples/))
+    call mpas_log_write('   --- Subsamples set to $i', intArgs=(/subsamples/))
     subwidth = (geowidth * PI / 180.0) / subsamples
     call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidth/))
 
@@ -1514,6 +1520,7 @@ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidt
 !
 ! Interpolate ALBEDO12M
 !
+ call mpas_log_write('---> START interpolate ALBEDO12m')
  if (trim(config_albedo_data) == 'MODIS') then
 
     call mpas_log_write('Using MODIS 0.05-deg data for climatological monthly albedo')
@@ -1549,7 +1556,7 @@ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidt
     subsamples2 = sqrt(2.) * geowidth / minres
     call mpas_log_write('   -- Ratio sqrt(2)*geowidth/minres = $r', realArgs=(/subsamples2/))
     subsamples = int(subsamples2) + 1
-    call mpas_log_write('   --- subsamples set to $i', intArgs=(/subsamples/))
+    call mpas_log_write('   --- Subsamples set to $i', intArgs=(/subsamples/))
     subwidth = (geowidth * PI / 180.0) / subsamples
     call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidth/))
 
