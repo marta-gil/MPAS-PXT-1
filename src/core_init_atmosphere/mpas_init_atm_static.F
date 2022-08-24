@@ -284,6 +284,7 @@
 !MGB
 ! Min area of the cell
 minarea = minval(areaCell(:))
+call mpas_log_write('--- Minimum Area = $r', realArgs=(/minarea/))
 if ( minarea < 0.001 ) then
     call mpas_log_write('Recompute minimum area ignoring super small values')
     minarea = 10**12
@@ -295,8 +296,8 @@ if ( minarea < 0.001 ) then
             end if
         end if
     end do
+    call mpas_log_write('--- (new) Minimum Area = $r', realArgs=(/minarea/))
 end if
-call mpas_log_write('--- Minimum Area = $r', realArgs=(/minarea/))
 minarea = minarea / (10**6)
 call mpas_log_write('--- Minimum Area = $r km**2', realArgs=(/minarea/))
 minres = 2 * sqrt(minarea / PI)
