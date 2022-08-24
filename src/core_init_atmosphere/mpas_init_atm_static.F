@@ -279,9 +279,21 @@
 
 !MGB
 ! Min area of the cell
-minarea = maxval(areaCell(:))
+minarea = minval(areaCell(:))
+if ( minarea < 0.001 ) then
+    call mpas_log_write('Recompute minimum area ignoring super small values')
+    minarea = 10**12
+    do i=1,size(areaCell)
+        if (areaCell(i) > 0.001) then
+            newarea = areaCell(i)
+            if ( newarea < minarea ) then
+                minarea = newlon
+            end if
+        end if
+    end do
+end if
 call mpas_log_write('--- Minimum Area = $r', realArgs=(/minarea/))
-minarea = minarea / (10**6) * (6371220.0**2)
+minarea = minarea / (10**6)
 call mpas_log_write('--- Minimum Area = $r km**2', realArgs=(/minarea/))
 minres = 2 * sqrt(minarea / PI)
 call mpas_log_write('--- Minimum Resolution = $r km', realArgs=(/minres/))
