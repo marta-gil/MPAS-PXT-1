@@ -429,10 +429,8 @@ call mpas_log_write('')
  end select
 
  !MGB Fake subloops for every geogrid cell
- subsamples2 = geowidth / minres
+ subsamples2 = sqrt(2) * geowidth / minres
  call mpas_log_write('--- geowidth / minres = $r', realArgs=(/subsamples2/))
- subsamples2 = minres / geowidth
- call mpas_log_write('--- minres / geowidth = $r', realArgs=(/subsamples2/))
  subsamples = 2.
  subwidth = (geowidth * PI / 180.0) / subsamples
 
