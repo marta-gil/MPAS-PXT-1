@@ -279,7 +279,6 @@
 
 !MGB
 ! Min area of the cell
-areaCell
 minarea = minval(areaCell(:))
 call mpas_log_write('--- Minimum Area = $r', realArgs=(/minarea/))
 minarea = minarea / (10**6) * (6371220.0**2)
