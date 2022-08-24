@@ -103,7 +103,7 @@
  real(kind=RKIND):: mintile_lat,maxtile_lat,mintile_lon,maxtile_lon
 
  !MGB for smpart subsampling selection
- real(kind=RKIND):: minarea, minradius, newarea, subsamples2
+ real(kind=RKIND):: minarea, minres, newarea, subsamples2
 
  real(kind=RKIND):: lat,lon,x,y,z
  real(kind=RKIND):: lat_pt,lon_pt
@@ -298,8 +298,9 @@ if ( minarea < 0.001 ) then
     end do
     call mpas_log_write('--- (new) Minimum Area = $r km**2', realArgs=(/minarea/))
 end if
-minradius = sqrt(minarea / PI) / 100
-call mpas_log_write('--- Minimum Radius Cell = $r degrees', realArgs=(/minradius/))
+! diameter of the smallest cell (in degrees)
+minres = 2 * sqrt(minarea / PI) / 111
+call mpas_log_write('--- Minimum Radius Cell = $r degrees', realArgs=(/minres/))
 
 ! Min and max latitudes of the grid
 call mpas_log_write('Find latlon limits of the grid')
@@ -428,10 +429,10 @@ call mpas_log_write('')
  end select
 
  !MGB Fake subloops for every geogrid cell
- subsamples2 = geowidth / minradius
- call mpas_log_write('--- geowidth / minradius = $r', realArgs=(/subsamples2/))
- subsamples2 = minradius / geowidth
- call mpas_log_write('--- minradius / geowidth = $r', realArgs=(/subsamples2/))
+ subsamples2 = geowidth / minres
+ call mpas_log_write('--- geowidth / minres = $r', realArgs=(/subsamples2/))
+ subsamples2 = minres / geowidth
+ call mpas_log_write('--- minres / geowidth = $r', realArgs=(/subsamples2/))
  subsamples = 2.
  subwidth = (geowidth * PI / 180.0) / subsamples
 
