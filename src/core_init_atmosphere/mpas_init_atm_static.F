@@ -99,7 +99,7 @@
  integer, pointer :: supersample_fac
 
  !MGB for loop optimization
- real(kind=RKIND):: grid_minlat,grid_maxlat,grid_minlon,grid_maxlon, newlon, newlat
+ real(kind=RKIND):: grid_minlat,grid_maxlat,grid_minlon,grid_maxlon, newlon, newlat, minarea, minres
  real(kind=RKIND):: mintile_lat,maxtile_lat,mintile_lon,maxtile_lon
  real(kind=RKIND):: lat,lon,x,y,z
  real(kind=RKIND):: lat_pt,lon_pt
