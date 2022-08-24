@@ -322,7 +322,7 @@ if ( grid_minlat < 0.001 .and. grid_minlat > -0.001 ) then
     call mpas_log_write('Recompute minimum lat ignoring super small values')
     grid_minlat = 90.
     do i=1,size(latVertex)
-        if (latVertex(i) > 0.001 .and. latVertex(i) < -0.001) then
+        if (latVertex(i) > 0.001 .or. latVertex(i) < -0.001) then
             newlat = latVertex(i) * 180.0 / PI
             if ( newlat < grid_minlat ) then
                 grid_minlat = newlat
@@ -334,7 +334,7 @@ if ( grid_maxlat < 0.001 .and. grid_maxlat > -0.001 ) then
     call mpas_log_write('Recompute maximum lat ignoring super small values')
     grid_maxlat = -90.
     do i=1,size(latVertex)
-        if (latVertex(i) > 0.001 .and. latVertex(i) < -0.001) then
+        if (latVertex(i) > 0.001 .or. latVertex(i) < -0.001) then
             newlat = latVertex(i) * 180.0 / PI
             if ( newlat > grid_maxlat ) then
                 grid_maxlat = newlat
