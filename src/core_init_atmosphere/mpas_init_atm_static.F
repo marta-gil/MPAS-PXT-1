@@ -432,7 +432,7 @@ call mpas_log_write('')
  subsamples2 = sqrt(2.) * geowidth / minres
  call mpas_log_write('--- sqrt(2)*geowidth / minres = $r', realArgs=(/subsamples2/))
  subsamples = int(subsamples2) + 1
- call mpas_log_write('--- subsamples = $i', realArgs=(/subsamples/))
+ call mpas_log_write('--- subsamples = $i', intArgs=(/subsamples/))
  subsamples = 2
  subwidth = (geowidth * PI / 180.0) / subsamples
  call mpas_log_write('--- subwidth = $r', realArgs=(/subwidth/))
