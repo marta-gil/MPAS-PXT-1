@@ -103,7 +103,7 @@
  real(kind=RKIND):: mintile_lat,maxtile_lat,mintile_lon,maxtile_lon
 
  !MGB for smpart subsampling selection
- real(kind=RKIND):: minarea, minres, newarea
+ real(kind=RKIND):: minarea, minradius, newarea
 
  real(kind=RKIND):: lat,lon,x,y,z
  real(kind=RKIND):: lat_pt,lon_pt
@@ -428,8 +428,13 @@ call mpas_log_write('')
  end select
 
  !MGB Fake subloops for every geogrid cell
+ subsamples = geowidth / minradius
+ call mpas_log_write('--- geowidth / minradius = $r', realArgs=(/subsamples/))
+ subsamples = minradius / geowidth
+ call mpas_log_write('--- minradius / geowidth = $r', realArgs=(/subsamples/))
  subsamples = 2.
  subwidth = (geowidth * PI / 180.0) / subsamples
+
 
 
  do jTileStart = 1,20401,ny-6
