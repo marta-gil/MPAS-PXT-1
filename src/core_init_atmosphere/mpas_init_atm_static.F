@@ -568,15 +568,6 @@ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidt
  start_lat = -89.99583
  start_lon = -179.99583
 
-!MGB Fake subloops for every geogrid cell
-call mpas_log_write(' - Reference dataset grid-spacing = $r degrees', realArgs=(/geowidth/))
-subsamples2 = sqrt(2.) * geowidth / minres
-call mpas_log_write('   -- Ratio sqrt(2)*geowidth/minres = $r', realArgs=(/subsamples2/))
-subsamples = int(subsamples2) + 1
-call mpas_log_write('   --- Subsamples set to $i', intArgs=(/subsamples/))
-subwidth = (geowidth * PI / 180.0) / subsamples
-call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidth/))
-
  surface_input_select1: select case(trim(config_landuse_data))
     case('USGS')
        call mpas_log_write('Using 24-class USGS 30-arc-second land cover dataset')
@@ -607,6 +598,15 @@ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidt
  lu_index(:) = 0.0
 
  rarray_ptr = c_loc(rarray)
+
+ !MGB Fake subloops for every geogrid cell
+ call mpas_log_write(' - Reference dataset grid-spacing = $r degrees', realArgs=(/geowidth/))
+ subsamples2 = sqrt(2.) * geowidth / minres
+ call mpas_log_write('   -- Ratio sqrt(2)*geowidth/minres = $r', realArgs=(/subsamples2/))
+ subsamples = int(subsamples2) + 1
+ call mpas_log_write('   --- Subsamples set to $i', intArgs=(/subsamples/))
+ subwidth = (geowidth * PI / 180.0) / subsamples
+ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidth/))
 
  do jTileStart = 1,20401,ny
     jTileEnd = jTileStart + ny - 1
@@ -757,14 +757,14 @@ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidt
  start_lat = -89.99583
  start_lon = -179.99583
 
-!MGB Fake subloops for every geogrid cell
-call mpas_log_write(' - Reference dataset grid-spacing = $r degrees', realArgs=(/geowidth/))
-subsamples2 = sqrt(2.) * geowidth / minres
-call mpas_log_write('   -- Ratio sqrt(2)*geowidth/minres = $r', realArgs=(/subsamples2/))
-subsamples = int(subsamples2) + 1
-call mpas_log_write('   --- Subsamples set to $i', intArgs=(/subsamples/))
-subwidth = (geowidth * PI / 180.0) / subsamples
-call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidth/))
+ !MGB Fake subloops for every geogrid cell
+ call mpas_log_write(' - Reference dataset grid-spacing = $r degrees', realArgs=(/geowidth/))
+ subsamples2 = sqrt(2.) * geowidth / minres
+ call mpas_log_write('   -- Ratio sqrt(2)*geowidth/minres = $r', realArgs=(/subsamples2/))
+ subsamples = int(subsamples2) + 1
+ call mpas_log_write('   --- Subsamples set to $i', intArgs=(/subsamples/))
+ subwidth = (geowidth * PI / 180.0) / subsamples
+ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidth/))
 
  do jTileStart = 1,20401,ny
     jTileEnd = jTileStart + ny - 1
@@ -1305,8 +1305,8 @@ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidt
        jTileEnd = jTileStart + ny - 1
 
        !MGB Do we need to check this latitude?
-       mintile_lat = start_lat + (jTileStart + (1) - 2) * 0.0083333333
-       maxtile_lat = start_lat + (jTileStart + (ny) - 2) * 0.0083333333
+       mintile_lat = start_lat + (jTileStart + (1) - 2) * geowidth
+       maxtile_lat = start_lat + (jTileStart + (ny) - 2) * geowidth
        if (grid_minlat < maxtile_lat .and. grid_maxlat > mintile_lat) then
            call mpas_log_write(' LAT Folder ($i, $i): $r $r', intArgs=(/jTileStart, jTileEnd/), realArgs=(/mintile_lat,maxtile_lat/))
 
@@ -1314,8 +1314,8 @@ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidt
               iTileEnd = iTileStart + nx - 1
 
               !MGB Do we need to check this longitude?
-              mintile_lon = start_lon + (iTileStart + (1) - 2) * 0.0083333333
-              maxtile_lon = start_lon + (iTileStart + (nx) - 2) * 0.0083333333
+              mintile_lon = start_lon + (iTileStart + (1) - 2) * geowidth
+              maxtile_lon = start_lon + (iTileStart + (nx) - 2) * geowidth
               if (grid_minlon >= 180) then
                    grid_minlon = grid_minlon-360
               end if
@@ -1337,8 +1337,8 @@ call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidt
                   iPoint = 1
                   do j=1,ny
                   do i=1,nx
-                     lat_pt = start_lat + (jTileStart + j - 2) * 0.0083333333
-                     lon_pt = start_lon + (iTileStart + i - 2) * 0.0083333333
+                     lat_pt = start_lat + (jTileStart + j - 2) * geowidth
+                     lon_pt = start_lon + (iTileStart + i - 2) * geowidth
                      lat_pt = lat_pt * PI / 180.0
                      lon_pt = lon_pt * PI / 180.0
 
