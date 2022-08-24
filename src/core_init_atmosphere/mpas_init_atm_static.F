@@ -428,15 +428,14 @@ call mpas_log_write('')
        call mpas_log_write('Please correct the namelist.', messageType=MPAS_LOG_CRIT)
  end select
 
- !MGB Fake subloops for every geogrid cell
- subsamples2 = sqrt(2.) * geowidth / minres
- call mpas_log_write('--- sqrt(2)*geowidth / minres = $r', realArgs=(/subsamples2/))
- subsamples = int(subsamples2) + 1
- call mpas_log_write('--- subsamples = $i', intArgs=(/subsamples/))
- subsamples = 2
- subwidth = (geowidth * PI / 180.0) / subsamples
- call mpas_log_write('--- subwidth = $r', realArgs=(/subwidth/))
-
+!MGB Fake subloops for every geogrid cell
+call mpas_log_write(' - Reference dataset grid-spacing = $r degrees', realArgs=(/geowidth/))
+subsamples2 = sqrt(2.) * geowidth / minres
+call mpas_log_write('   -- Ratio sqrt(2)*geowidth/minres = $r', realArgs=(/subsamples2/))
+subsamples = int(subsamples2) + 1
+call mpas_log_write('   --- subsamples set to $i', intArgs=(/subsamples/))
+subwidth = (geowidth * PI / 180.0) / subsamples
+call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidth/))
 
  do jTileStart = 1,20401,ny-6
     jTileEnd = jTileStart + ny - 1 - 6
@@ -567,9 +566,14 @@ call mpas_log_write('')
  start_lat = -89.99583
  start_lon = -179.99583
 
- !MGB Fake subloops for every geogrid cell
- subsamples = 2.
- subwidth = (geowidth * PI / 180.0) / subsamples
+!MGB Fake subloops for every geogrid cell
+call mpas_log_write(' - Reference dataset grid-spacing = $r degrees', realArgs=(/geowidth/))
+subsamples2 = sqrt(2.) * geowidth / minres
+call mpas_log_write('   -- Ratio sqrt(2)*geowidth/minres = $r', realArgs=(/subsamples2/))
+subsamples = int(subsamples2) + 1
+call mpas_log_write('   --- subsamples set to $i', intArgs=(/subsamples/))
+subwidth = (geowidth * PI / 180.0) / subsamples
+call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidth/))
 
  surface_input_select1: select case(trim(config_landuse_data))
     case('USGS')
@@ -750,9 +754,14 @@ call mpas_log_write('')
  start_lat = -89.99583
  start_lon = -179.99583
 
- !MGB Fake subloops for every geogrid cell
- subsamples = 2.
- subwidth = (geowidth * PI / 180.0) / subsamples
+!MGB Fake subloops for every geogrid cell
+call mpas_log_write(' - Reference dataset grid-spacing = $r degrees', realArgs=(/geowidth/))
+subsamples2 = sqrt(2.) * geowidth / minres
+call mpas_log_write('   -- Ratio sqrt(2)*geowidth/minres = $r', realArgs=(/subsamples2/))
+subsamples = int(subsamples2) + 1
+call mpas_log_write('   --- subsamples set to $i', intArgs=(/subsamples/))
+subwidth = (geowidth * PI / 180.0) / subsamples
+call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidth/))
 
  do jTileStart = 1,20401,ny
     jTileEnd = jTileStart + ny - 1
@@ -1024,8 +1033,13 @@ call mpas_log_write('')
     geowidth = 0.05 / supersample_fac
 
     !MGB Fake subloops for every geogrid cell
-    subsamples = 3.
+    call mpas_log_write(' - Reference dataset grid-spacing = $r degrees', realArgs=(/geowidth/))
+    subsamples2 = sqrt(2.) * geowidth / minres
+    call mpas_log_write('   -- Ratio sqrt(2)*geowidth/minres = $r', realArgs=(/subsamples2/))
+    subsamples = int(subsamples2) + 1
+    call mpas_log_write('   --- subsamples set to $i', intArgs=(/subsamples/))
     subwidth = (geowidth * PI / 180.0) / subsamples
+    call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidth/))
 
     do jTileStart = 1,02401,ny-6
        jTileEnd = jTileStart + ny - 1 - 6
@@ -1273,8 +1287,13 @@ call mpas_log_write('')
     geowidth = 0.0083333333
 
     !MGB Fake subloops for every geogrid cell
-    subsamples = 2.
+    call mpas_log_write(' - Reference dataset grid-spacing = $r degrees', realArgs=(/geowidth/))
+    subsamples2 = sqrt(2.) * geowidth / minres
+    call mpas_log_write('   -- Ratio sqrt(2)*geowidth/minres = $r', realArgs=(/subsamples2/))
+    subsamples = int(subsamples2) + 1
+    call mpas_log_write('   --- subsamples set to $i', intArgs=(/subsamples/))
     subwidth = (geowidth * PI / 180.0) / subsamples
+    call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidth/))
 
     do jTileStart = 1,20401,ny
        jTileEnd = jTileStart + ny - 1
@@ -1526,8 +1545,13 @@ call mpas_log_write('')
     geowidth = 0.05 / supersample_fac
 
     !MGB Fake subloops for every geogrid cell
-    subsamples = 3.
+    call mpas_log_write(' - Reference dataset grid-spacing = $r degrees', realArgs=(/geowidth/))
+    subsamples2 = sqrt(2.) * geowidth / minres
+    call mpas_log_write('   -- Ratio sqrt(2)*geowidth/minres = $r', realArgs=(/subsamples2/))
+    subsamples = int(subsamples2) + 1
+    call mpas_log_write('   --- subsamples set to $i', intArgs=(/subsamples/))
     subwidth = (geowidth * PI / 180.0) / subsamples
+    call mpas_log_write('   --- Effective subwidth = $r degrees', realArgs=(/subwidth/))
 
     do jTileStart = 1,02401,ny-6
        jTileEnd = jTileStart + ny - 1 - 6
