@@ -430,10 +430,12 @@ call mpas_log_write('')
 
  !MGB Fake subloops for every geogrid cell
  subsamples2 = sqrt(2) * geowidth / minres
- call mpas_log_write('--- geowidth / minres = $r', realArgs=(/subsamples2/))
- subsamples = 2.
+ call mpas_log_write('--- sqrt(2)*geowidth / minres = $r', realArgs=(/subsamples2/))
+ subsamples = int(subsamples2) + 1
+ call mpas_log_write('--- subsamples = $r', realArgs=(/subsamples/))
+ subsamples = 2
  subwidth = (geowidth * PI / 180.0) / subsamples
-
+ call mpas_log_write('--- subwidth = $r', realArgs=(/subwidth/))
 
 
  do jTileStart = 1,20401,ny-6
