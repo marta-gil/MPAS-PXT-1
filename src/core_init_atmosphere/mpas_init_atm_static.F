@@ -291,7 +291,7 @@ if ( minarea < 0.001 ) then
         if (areaCell(i) > 0.001) then
             newarea = areaCell(i)
             if ( newarea < minarea ) then
-                minarea = newlon
+                minarea = newarea
             end if
         end if
     end do
@@ -301,6 +301,8 @@ minarea = minarea / (10**6)
 call mpas_log_write('--- Minimum Area = $r km**2', realArgs=(/minarea/))
 minres = 2 * sqrt(minarea / PI)
 call mpas_log_write('--- Minimum Resolution = $r km', realArgs=(/minres/))
+minres = minres / 100.
+call mpas_log_write('--- Minimum Resolution = $r degrees', realArgs=(/minres/))
 
 ! Min and max latitudes of the grid
 call mpas_log_write('Find latlon limits of the grid')
