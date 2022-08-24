@@ -278,6 +278,15 @@
  end select surface_input_select0
 
 !MGB
+! Min area of the cell
+areaCell
+minarea = minval(areaCell(:))
+call mpas_log_write('--- Minimum Area = $r', realArgs=(/minarea/))
+minarea = minarea / (10**6) * (6371220.0**2)
+call mpas_log_write('--- Minimum Area = $r km**2', realArgs=(/minarea/))
+minres = 2 * sqrt(minarea / PI)
+call mpas_log_write('--- Minimum Resolution = $r km', realArgs=(/minres/))
+
 ! Min and max latitudes of the grid
 call mpas_log_write('Find latlon limits of the grid')
 call mpas_log_write('')
@@ -287,14 +296,15 @@ grid_maxlat = maxval(latVertex(:)) * 180.0 / PI
 grid_minlon = minval(lonVertex(:)) * 180.0 / PI
 grid_maxlon = maxval(lonVertex(:)) * 180.0 / PI
 
+! MGB Weird bug fix
 ! lonVertex and latVertex can sometimes have 0.000 values
 ! that are not correct (are not there in grid.nc!)
-! These makes our minimum values compute erroneous values!
-if ( grid_minlat < 0.001 ) then
+! These makes our minimum/maximum values compute erroneous values!
+if ( grid_minlat < 0.001 .and. grid_minlat > -0.001 ) then
     call mpas_log_write('Recompute minimum lat ignoring super small values')
-    grid_minlat = 360.
+    grid_minlat = 90.
     do i=1,size(latVertex)
-        if (latVertex(i) > 0.001) then
+        if (latVertex(i) > 0.001 .and. latVertex(i) < -0.001) then
             newlat = latVertex(i) * 180.0 / PI
             if ( newlat < grid_minlat ) then
                 grid_minlat = newlat
@@ -302,8 +312,22 @@ if ( grid_minlat < 0.001 ) then
         end if
     end do
 end if
+if ( grid_maxlat < 0.001 .and. grid_maxlat > -0.001 ) then
+    call mpas_log_write('Recompute maximum lat ignoring super small values')
+    grid_maxlat = -90.
+    do i=1,size(latVertex)
+        if (latVertex(i) > 0.001 .and. latVertex(i) < -0.001) then
+            newlat = latVertex(i) * 180.0 / PI
+            if ( newlat > grid_maxlat ) then
+                grid_maxlat = newlat
+            end if
+        end if
+    end do
+end if
 if ( grid_minlon < 0.001 ) then
     call mpas_log_write('Recompute minimum lon ignoring super small values')
+    ! We cannot have grid_maxlon = 0. (since all lons are positive values,
+    ! having a 0 maximum would mean all values are 0s)
     grid_minlon = 360.
     do i=1,size(lonVertex)
         if (lonVertex(i) > 0.001) then
@@ -315,10 +339,12 @@ if ( grid_minlon < 0.001 ) then
     end do
 end if
 
+! MGB
 ! possibly correct longitudes to negative values
 ! if we believe the mesh may be crossing the zero meridian
 if ( (grid_maxlon - grid_minlon) > 300. ) then
-    call mpas_log_write('The MPAS grid crosses the zero meridian')
+    call mpas_log_write('The MPAS grid probably crosses the zero meridian')
+    ! It may mean it is a global mesh
     grid_minlon = 360.
     grid_maxlon = 0.
     do i=1,size(lonVertex)
@@ -336,6 +362,9 @@ if ( (grid_maxlon - grid_minlon) > 300. ) then
     end do
 end if
 
+! MGB
+! Units: degrees
+! Longitude can be from -180 to 360 (to try to have a real min and max limits)
 call mpas_log_write('--- grid_minlat = $r', realArgs=(/grid_minlat/))
 call mpas_log_write('--- grid_maxlat = $r', realArgs=(/grid_maxlat/))
 call mpas_log_write('--- grid_minlon = $r', realArgs=(/grid_minlon/))
@@ -405,15 +434,25 @@ call mpas_log_write('')
            mintile_lon = start_lon + (iTileStart + (4) - 5) * geowidth
            maxtile_lon = start_lon + (iTileStart + (nx-3) - 5) * geowidth
            if (start_lon >= 0. .and. grid_minlon < 0. .and. mintile_lon >= 180.) then
+                ! The tiles go from 0 to 360 longitude, and our grid has
+                ! negative longitude (ie, it presumably crosses the 0 meridian)
+                ! Since we are now considering a tile past 180 degrees,
+                ! we convert the tile limits to -180/180 system, so that
+                ! we can compare mins and maxs versus those of the grid
                 mintile_lon = mintile_lon-360
                 maxtile_lon = maxtile_lon-360
            end if
-           if (start_lon <= 0. .and. grid_minlon >= 180) then
-                grid_minlon = grid_minlon-360
+           if (start_lon <= 0.) then
+                ! The tiles go from -180 to 180 but our grid has one of the
+                ! limits over the 180 value => we convert it to -180/180
+                if (grid_minlon >= 180) then
+                    grid_minlon = grid_minlon-360
+                end if
+                if (grid_maxlon >= 180) then
+                    grid_maxlon = grid_maxlon-360
+                end if
            end if
-           if (start_lon <= 0. .and. grid_maxlon >= 180) then
-                grid_maxlon = grid_maxlon-360
-           end if
+
            if (grid_minlon < maxtile_lon .and. grid_maxlon > mintile_lon) then
                call mpas_log_write('     LON Folder ($i, $i): $r $r', intArgs=(/iTileStart, iTileEnd/), realArgs=(/mintile_lon,maxtile_lon/))
 
